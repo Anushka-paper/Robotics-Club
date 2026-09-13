@@ -1,0 +1,87 @@
+import path from "node:path";
+import fs from "node:fs";
+import crypto from "node:crypto";
+import { EMBEDX_CONFIG } from "@/config/embedx";
+
+const { allowedMimeTypes, allowedExtensions, maxFileSizeBytes } = EMBEDX_CONFIG.payment;
+
+export interface UploadResult {
+  url: string;
+  serverPath: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface UploadError {
+  error: string;
+}
+
+export function validateReceiptFile(
+  file: File
+): { valid: true } | { valid: false; error: string } {
+  // Validate file size
+  if (file.size > maxFileSizeBytes) {
+    return {
+      valid: false,
+      error: `File size too large. Maximum allowed is ${maxFileSizeBytes / (1024 * 1024)}MB.`,
+    };
+  }
+
+  // Validate MIME type
+  if (!allowedMimeTypes.includes(file.type as (typeof allowedMimeTypes)[number])) {
+    return {
+      valid: false,
+      error: "Please upload a valid JPG, PNG, JPEG or WEBP image.",
+    };
+  }
+
+  // Validate extension
+  const ext = path.extname(file.name).toLowerCase();
+  if (!allowedExtensions.includes(ext as (typeof allowedExtensions)[number])) {
+    return {
+      valid: false,
+      error: "Please upload a valid JPG, PNG, JPEG or WEBP image.",
+    };
+  }
+
+  return { valid: true };
+}
+
+export async function saveReceiptFile(
+  file: File
+): Promise<UploadResult | UploadError> {
+  // Double-check validation server-side
+  const validation = validateReceiptFile(file);
+  if (!validation.valid) {
+    return { error: validation.error };
+  }
+
+  const ext = path.extname(file.name).toLowerCase();
+  const safeFilename = `${crypto.randomUUID()}${ext}`;
+
+  const uploadDir = path.join(process.cwd(), "public", "uploads", "receipts");
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+
+  const serverPath = path.join(uploadDir, safeFilename);
+  const publicUrl = `/uploads/receipts/${safeFilename}`;
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    fs.writeFileSync(serverPath, buffer);
+
+    return {
+      url: publicUrl,
+      serverPath,
+      originalName: file.name,
+      mimeType: file.type,
+      sizeBytes: file.size,
+    };
+  } catch (err) {
+    console.error("File upload error:", err);
+    return { error: "Payment screenshot upload failed. Please try again." };
+  }
+}
