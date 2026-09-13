@@ -10,7 +10,7 @@ export const EMBEDX_CONFIG = {
   university: "Madan Mohan Malaviya University of Technology, Gorakhpur",
   
   // Kit / Registration Fee
-  kitFee: "₹499",
+  kitFee: "₹1414",
   kitFeeNote: "Per team kit inclusive of microcontroller board, sensor bundle & workshop kit",
   
   // QR Code configuration:
