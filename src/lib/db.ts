@@ -13,6 +13,7 @@ export interface RegistrationRecord {
   registrationId: string;
   teamName: string;
   leaderName: string;
+  leaderRollNumber: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;
@@ -32,6 +33,7 @@ export interface IRegistrationDocument extends Document {
   registrationId: string;
   teamName: string;
   leaderName: string;
+  leaderRollNumber?: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;

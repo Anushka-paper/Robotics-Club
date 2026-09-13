@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedRegistration } from "@/lib/auth";
 import { getRegistrationByRegistrationId } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,22 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: "Invalid registration ID." },
         { status: 400 }
+      );
+    }
+
+    const authenticatedRegistration = await getAuthenticatedRegistration();
+
+    if (!authenticatedRegistration) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required." },
+        { status: 401 }
+      );
+    }
+
+    if (authenticatedRegistration.registrationId !== registrationId.toUpperCase()) {
+      return NextResponse.json(
+        { success: false, error: "You are not authorized to access this dashboard." },
+        { status: 403 }
       );
     }
 
@@ -39,6 +56,7 @@ export async function GET(
       registrationId: registration.registrationId,
       teamName: registration.teamName,
       leaderName: registration.leaderName,
+      leaderRollNumber: registration.leaderRollNumber,
       leaderBranch: registration.leaderBranch,
       leaderYear: registration.leaderYear,
       // Partially mask mobile and email for privacy

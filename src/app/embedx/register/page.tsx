@@ -12,6 +12,7 @@ import { Camera, AlertTriangle, Search, Check, CheckCircle2 } from "lucide-react
 // ─────────────────────────────────────────────
 interface MemberData {
   name: string;
+  rollNumber: string;
   branch: string;
   year: string;
   email: string;
@@ -20,6 +21,7 @@ interface MemberData {
 interface TeamData {
   teamName: string;
   leaderName: string;
+  leaderRollNumber: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;
@@ -282,6 +284,19 @@ function Step1({
           />
         </Field>
 
+        <Field label="Leader Roll Number" id="leaderRollNumber" error={errors.leaderRollNumber}>
+          <input
+            id="leaderRollNumber"
+            name="leaderRollNumber"
+            type="text"
+            value={team.leaderRollNumber}
+            onChange={handleTeamChange}
+            placeholder="e.g. 2026XXXXXX"
+            autoComplete="off"
+            style={inputStyle("leaderRollNumber")}
+          />
+        </Field>
+
         <Field label="Branch" id="leaderBranch" error={errors.leaderBranch}>
           <select
             id="leaderBranch"
@@ -409,6 +424,18 @@ function Step2({
                 onChange={(e) => handleMemberChange(idx, e)}
                 placeholder="Full name"
                 style={inputStyle(`member${idx}.name`)}
+              />
+            </Field>
+
+            <Field label="Roll Number" id={`member${idx}-rollNumber`} error={errors[`member${idx}.rollNumber`]}>
+              <input
+                id={`member${idx}-rollNumber`}
+                name="rollNumber"
+                type="text"
+                value={members[idx]?.rollNumber || ""}
+                onChange={(e) => handleMemberChange(idx, e)}
+                placeholder="e.g. 2024CS102"
+                style={inputStyle(`member${idx}.rollNumber`)}
               />
             </Field>
 
@@ -698,6 +725,7 @@ export default function RegisterPage() {
   const [team, setTeam] = useState<TeamData>({
     teamName: "",
     leaderName: "",
+    leaderRollNumber: "",
     leaderBranch: "",
     leaderYear: "",
     mobile: "",
@@ -707,8 +735,8 @@ export default function RegisterPage() {
 
   // ── Member data ─────────────────────────────
   const [members, setMembers] = useState<MemberData[]>([
-    { name: "", branch: "", year: "", email: "" },
-    { name: "", branch: "", year: "", email: "" },
+    { name: "", rollNumber: "", branch: "", year: "", email: "" },
+    { name: "", rollNumber: "", branch: "", year: "", email: "" },
   ]);
 
   // ── Payment data ────────────────────────────
@@ -871,6 +899,7 @@ export default function RegisterPage() {
       const payload = {
         teamName: team.teamName,
         leaderName: team.leaderName,
+        leaderRollNumber: team.leaderRollNumber,
         leaderBranch: team.leaderBranch,
         leaderYear: team.leaderYear,
         mobile: team.mobile,
