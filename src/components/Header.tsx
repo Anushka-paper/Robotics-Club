@@ -12,7 +12,7 @@ export default function Header() {
       <nav className={styles.navLinks}>
         <Link href="/events">Events</Link>
         <Link href="/team">Team</Link>
-        <Link href="/embedx/register" className={styles.cta}>
+        <Link href="/embedx" className={styles.cta}>
           EMBEDX <span className={styles.arrow}>&rarr;</span>
         </Link>
         <Link href="/play" className={styles.cta}>
