@@ -17,7 +17,7 @@ export const EMBEDX_CONFIG = {
   // To use a real UPI QR Code image, simply set `qrCodeImageUrl: "/images/payment-qr.png"`
   // Setting it to null/empty will display the futuristic branded SVG QR code placeholder.
   payment: {
-    qrCodeImageUrl: null as string | null,
+    qrCodeImageUrl: "/qr-pay.jpeg" as string | null,
     qrPlaceholderText: "QR CODE PLACEHOLDER",
     qrScanInstruction: "Scan to pay for the EmbedX kit",
     upiId: "roboticsclubmmmut@sbi",

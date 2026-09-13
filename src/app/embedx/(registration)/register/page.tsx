@@ -579,6 +579,16 @@ function Step3({
           <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#00f0ff", marginTop: "0.5rem" }}>
             Kit Fee: {EMBEDX_CONFIG.kitFee}
           </div>
+          {EMBEDX_CONFIG.payment.qrCodeImageUrl && (
+            <a
+              href={EMBEDX_CONFIG.payment.qrCodeImageUrl}
+              download="embedx-payment-qr.jpeg"
+              className="btn-secondary"
+              style={{ marginTop: "0.75rem", display: "inline-flex" }}
+            >
+              Download QR Code
+            </a>
+          )}
         </div>
       </div>
 
