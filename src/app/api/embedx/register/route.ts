@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createSessionPayload, setSessionCookie } from "@/lib/auth";
 import { registrationApiSchema } from "@/lib/validation";
 import { saveReceiptFile } from "@/lib/upload";
 import {
@@ -158,6 +159,7 @@ export async function POST(request: NextRequest) {
       registrationId,
       teamName: data.teamName,
       leaderName: data.leaderName,
+      leaderRollNumber: data.leaderRollNumber,
       leaderBranch: data.leaderBranch,
       leaderYear: data.leaderYear,
       mobile: data.mobile,
@@ -176,8 +178,8 @@ export async function POST(request: NextRequest) {
       console.error("Email dispatch failed (non-critical):", err);
     });
 
-    // --- Return success ---
-    return NextResponse.json(
+    // --- Return success and establish the session for the new registration ---
+    const response = NextResponse.json(
       {
         success: true,
         registrationId: registration.registrationId,
@@ -186,6 +188,13 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
+
+    setSessionCookie(
+      response,
+      createSessionPayload(registration.registrationId, registration.email)
+    );
+
+    return response;
   } catch (err) {
     console.error("Registration API error:", err);
     return NextResponse.json(

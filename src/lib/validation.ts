@@ -9,6 +9,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const memberSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  rollNumber: z.string().min(2, "Roll number must be at least 2 characters").max(50),
   branch: z.enum(branchValues, { error: "Please select a valid branch" }),
   year: z.enum(yearValues, { error: "Please select a valid year" }),
   email: z.string().regex(emailRegex, "Enter a valid email address").max(255),
@@ -17,6 +18,7 @@ export const memberSchema = z.object({
 export const teamDetailsSchema = z.object({
   teamName: z.string().min(2, "Team name must be at least 2 characters").max(100),
   leaderName: z.string().min(2, "Leader name must be at least 2 characters").max(100),
+  leaderRollNumber: z.string().min(2, "Roll number must be at least 2 characters").max(50),
   leaderBranch: z.enum(branchValues, { error: "Please select a branch" }),
   leaderYear: z.enum(yearValues, { error: "Please select a year" }),
   mobile: z.string().regex(indianMobileRegex, "Enter a valid 10-digit Indian mobile number"),
@@ -36,6 +38,7 @@ export const registrationApiSchema = z
   .object({
     teamName: z.string().min(2).max(100),
     leaderName: z.string().min(2).max(100),
+    leaderRollNumber: z.string().min(2).max(50),
     leaderBranch: z.enum(branchValues),
     leaderYear: z.enum(yearValues),
     mobile: z.string().regex(indianMobileRegex, "Enter a valid 10-digit Indian mobile number"),

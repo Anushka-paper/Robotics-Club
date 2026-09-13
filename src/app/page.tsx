@@ -41,12 +41,19 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* CTA Button */}
-        <Link href="/embedx/register">
-          <button className="btn-primary" style={{ fontSize: "1rem", padding: "0.875rem 2.5rem", width: "100%", maxWidth: "320px", fontFamily: "var(--font-space-grotesk)" }}>
-            Register Your Team →
-          </button>
-        </Link>
+        {/* CTA Buttons */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", width: "100%" }}>
+          <Link href="/embedx/register" style={{ width: "100%", maxWidth: "320px" }}>
+            <button className="btn-primary" style={{ fontSize: "1rem", padding: "0.875rem 2.5rem", width: "100%", fontFamily: "var(--font-space-grotesk)" }}>
+              Register Your Team →
+            </button>
+          </Link>
+          <Link href="/embedx/login" style={{ width: "100%", maxWidth: "320px" }}>
+            <button className="btn-secondary" style={{ fontSize: "0.9375rem", padding: "0.875rem 2.5rem", width: "100%", fontFamily: "var(--font-space-grotesk)" }}>
+              Login to Dashboard
+            </button>
+          </Link>
+        </div>
 
         <p style={{ marginTop: "1rem", fontSize: "0.8125rem", color: "#334155" }}>
           Kit fee required upon registration · Verification by Robotics Club admin

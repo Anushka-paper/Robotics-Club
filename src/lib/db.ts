@@ -15,6 +15,7 @@ export interface RegistrationRecord {
   registrationId: string;
   teamName: string;
   leaderName: string;
+  leaderRollNumber: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;
@@ -35,6 +36,7 @@ interface RawDbRow {
   registrationId: string;
   teamName: string;
   leaderName: string;
+  leaderRollNumber?: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;
@@ -77,6 +79,7 @@ export function getDatabase(): DatabaseSync {
       registrationId TEXT UNIQUE NOT NULL,
       teamName TEXT NOT NULL,
       leaderName TEXT NOT NULL,
+      leaderRollNumber TEXT NOT NULL DEFAULT '',
       leaderBranch TEXT NOT NULL,
       leaderYear TEXT NOT NULL,
       mobile TEXT NOT NULL,
@@ -97,6 +100,12 @@ export function getDatabase(): DatabaseSync {
     CREATE INDEX IF NOT EXISTS idx_reg_utr ON registrations(utr);
   `);
 
+  try {
+    db.exec("ALTER TABLE registrations ADD COLUMN leaderRollNumber TEXT NOT NULL DEFAULT '';");
+  } catch {
+    // Column already exists in newer databases.
+  }
+
   dbInstance = db;
   return db;
 }
@@ -112,6 +121,7 @@ function parseRow(row: RawDbRow | null | undefined): RegistrationRecord | null {
 
   return {
     ...row,
+    leaderRollNumber: row.leaderRollNumber || "",
     members: parsedMembers,
     paymentStatus: row.paymentStatus as RegistrationRecord["paymentStatus"],
     registrationStatus: row.registrationStatus as RegistrationRecord["registrationStatus"]
@@ -134,11 +144,11 @@ export async function createRegistration(
 
   const stmt = db.prepare(`
     INSERT INTO registrations (
-      id, registrationId, teamName, leaderName, leaderBranch, leaderYear,
+      id, registrationId, teamName, leaderName, leaderRollNumber, leaderBranch, leaderYear,
       mobile, email, memberCount, members, utr, paymentScreenshotUrl,
       paymentScreenshotPath, paymentStatus, registrationStatus, createdAt, updatedAt
     ) VALUES (
-      ?, ?, ?, ?, ?, ?,
+      ?, ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?, ?, ?,
       ?, ?, ?, ?, ?
     )
@@ -149,6 +159,7 @@ export async function createRegistration(
     data.registrationId,
     data.teamName,
     data.leaderName,
+    data.leaderRollNumber,
     data.leaderBranch,
     data.leaderYear,
     data.mobile,
