@@ -33,11 +33,11 @@ function withImages(members) {
 }
 
 export const facultyAdvisors = withImages([
-  { name: "Prof. B.K. Pandey", role: "Faculty", department: "", image: "team-photos/bk-pandey.jpg", category: "Faculty" },
-  { name: "Dr. Pallav Gupta", role: "Faculty", department: "", image: "team-photos/pallav-gupta.jpg", category: "Faculty" },
-  { name: "Dr. Rajan Mishra", role: "Faculty", department: "", image: "team-photos/rajan-mishra.jpg", category: "Faculty" },
-  { name: "Dr. Prince Kumar Singh", role: "Faculty", department: "", category: "Faculty" },
-  { name: "Dr. Vijay Shanker Chaudhary", role: "Faculty", department: "", category: "Faculty" },
+  { name: "Prof. B.K. Pandey", role: "Chairman, Council of Student Activities", department: "", image: "team-photos/bk-pandey.jpg", category: "Faculty" },
+  { name: "Dr. Rajan Mishra", role: "Vice-Chairman, Technical Sub-Council & Sports Sub-Council, CSA", department: "", image: "team-photos/rajan-mishra.jpg", category: "Faculty" },
+  { name: "Dr. Pallav Gupta", role: "Faculty In-charge, Technical Sub-Council, CSA", department: "", image: "team-photos/pallav-gupta.jpg", category: "Faculty" },
+  { name: "Dr. Prince Kumar Singh", role: "Faculty Advisor, Robotics Club", department: "", category: "Faculty" },
+  { name: "Dr. Vijay Shanker Chaudhary", role: "Faculty Advisor, Robotics Club", department: "", category: "Faculty" },
 ]);
 
 export const finalYearMembers = withImages([
