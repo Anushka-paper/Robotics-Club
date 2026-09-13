@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { EMBEDX_CONFIG } from "@/config/embedx";
+import { AlertTriangle, Check, Search, Printer, ArrowLeft } from "lucide-react";
 
 interface MemberItem {
   name: string;
@@ -230,7 +231,9 @@ export default function DashboardPage() {
     return (
       <div className="embedx-page-bg" style={{ minHeight: "calc(100dvh - 120px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem" }}>
         <div className="glass-card" style={{ padding: "2rem", maxWidth: "480px", width: "100%", textAlign: "center" }}>
-          <div style={{ fontSize: "2.5rem", marginBottom: "1rem" }}>⚠️</div>
+          <div style={{ color: "#ef4444", display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+            <AlertTriangle size={48} />
+          </div>
           <h2 style={{ fontFamily: "var(--font-space-grotesk)", color: "#f0f6ff", fontWeight: 700, marginBottom: "0.5rem" }}>
             Registration Not Found
           </h2>
@@ -261,8 +264,8 @@ export default function DashboardPage() {
       <div style={{ maxWidth: "800px", margin: "0 auto" }} className="animate-fade-in-up">
         {/* ── Success banner ── */}
         <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-          <div style={{ width: "60px", height: "60px", background: "linear-gradient(135deg, #00c8d7, #0ea5e9)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem", fontSize: "1.5rem", boxShadow: "0 0 24px rgba(0,200,215,0.35)" }}>
-            ✓
+          <div style={{ width: "60px", height: "60px", background: "linear-gradient(135deg, #00c8d7, #0ea5e9)", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem", color: "#030712", boxShadow: "0 0 24px rgba(0,200,215,0.35)" }}>
+            <Check size={32} strokeWidth={3} />
           </div>
           <h1 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "clamp(1.5rem, 5vw, 2rem)", fontWeight: 800, color: "#f0f6ff", margin: "0 0 0.5rem 0" }}>
             Registration Received
@@ -316,9 +319,15 @@ export default function DashboardPage() {
             color: "#fbbf24",
             lineHeight: 1.6,
             marginBottom: "1.25rem",
+            display: "flex",
+            alignItems: "flex-start",
+            gap: "0.6rem",
           }}
         >
-          🔍 <strong>Admin Verification Pending:</strong> The Robotics Club MMMUT team will manually verify your payment screenshot and UTR. Once verified, your registration status will update to <em>Confirmed</em>. Please keep your Registration ID handy for any follow-up.
+          <Search size={18} style={{ flexShrink: 0, marginTop: "2px" }} />
+          <div>
+            <strong>Admin Verification Pending:</strong> The Robotics Club MMMUT team will manually verify your payment screenshot and UTR. Once verified, your registration status will update to <em>Confirmed</em>. Please keep your Registration ID handy for any follow-up.
+          </div>
         </div>
 
         {/* ── Team Details ── */}
@@ -378,14 +387,19 @@ export default function DashboardPage() {
         {/* ── Actions ── */}
         <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center", marginTop: "2rem" }}>
           <Link href="/">
-            <button className="btn-secondary">← Back to Home</button>
+            <button className="btn-secondary" style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
+              <ArrowLeft size={16} />
+              <span>Back to Home</span>
+            </button>
           </Link>
           <button
             className="btn-secondary"
             onClick={() => window.print()}
             aria-label="Print this page"
+            style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
-            🖨 Save / Print
+            <Printer size={16} />
+            <span>Save / Print</span>
           </button>
         </div>
 

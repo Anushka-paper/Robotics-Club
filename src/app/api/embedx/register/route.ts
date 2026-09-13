@@ -188,11 +188,15 @@ export async function POST(request: NextRequest) {
     );
   } catch (err) {
     console.error("Registration API error:", err);
+    const errorMessage =
+      err instanceof Error
+        ? err.message
+        : "Something went wrong while submitting your registration. Please try again.";
+
     return NextResponse.json(
       {
         success: false,
-        error:
-          "Something went wrong while submitting your registration. Please try again.",
+        error: errorMessage,
       },
       { status: 500 }
     );
