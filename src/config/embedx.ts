@@ -20,7 +20,7 @@ export const EMBEDX_CONFIG = {
     qrCodeImageUrl: "/qr-pay.jpeg" as string | null,
     qrPlaceholderText: "QR CODE PLACEHOLDER",
     qrScanInstruction: "Scan to pay for the EmbedX kit",
-    upiId: "roboticsclubmmmut@sbi",
+    upiId: "",
     accountHolder: "Robotics Club MMMUT",
     note: "Make sure the UTR/Transaction ID and payment screenshot are clearly visible and accurate.",
     maxFileSizeBytes: 5 * 1024 * 1024, // 5MB
