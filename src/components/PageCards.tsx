@@ -27,8 +27,8 @@ export default function PageCards() {
             subtitle="Meet the builders"
             imageUrl="/team.jpg"
             actionText="Meet the Team &rarr;"
-            href="/team/index.html"
-            onActionClick={() => window.location.href = "/team/index.html"}
+            href="/team"
+            onActionClick={() => router.push("/team")}
           />
         </div>
 
@@ -49,8 +49,8 @@ export default function PageCards() {
             subtitle="Competitions & workshops"
             imageUrl="/events.jpg"
             actionText="Discover Events &rarr;"
-            href="/events/index.html"
-            onActionClick={() => window.location.href = "/events/index.html"}
+            href="/events"
+            onActionClick={() => router.push("/events")}
           />
         </div>
       </div>
