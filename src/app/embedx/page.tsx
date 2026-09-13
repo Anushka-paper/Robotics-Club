@@ -75,7 +75,7 @@ export default function EmbedxPage() {
       <div
         className="fixed inset-0 z-[1] pointer-events-none bg-cover bg-center bg-no-repeat mix-blend-screen opacity-20"
         style={{
-          backgroundImage: `url('/embedx-chip-bg.jpg')`,
+          backgroundImage: `url('/images/embedx-bg.jpg')`,
           WebkitMaskImage: 'radial-gradient(ellipse at center 40%, black 10%, transparent 70%)',
           maskImage: 'radial-gradient(ellipse at center 40%, black 10%, transparent 70%)'
         }}
@@ -97,7 +97,7 @@ export default function EmbedxPage() {
           {/* Base Layer: Dark and muted */}
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat w-full h-full opacity-20 grayscale-[50%] transition-transform duration-1000 ease-out group-hover:scale-105"
-            style={{ backgroundImage: `url('/embedx-robot-panoramic.jpg')` }}
+            style={{ backgroundImage: `url('/images/embedx-bg.jpg')` }}
           />
 
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#050810] pointer-events-none" />
@@ -106,7 +106,7 @@ export default function EmbedxPage() {
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat w-full h-full opacity-0 group-hover:opacity-100 transition-all duration-500 ease-out group-hover:scale-105"
             style={{
-              backgroundImage: `url('/embedx-robot-panoramic.jpg')`,
+              backgroundImage: `url('/images/embedx-bg.jpg')`,
               WebkitMaskImage: `radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)`,
               maskImage: `radial-gradient(circle 250px at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)`
             }}
