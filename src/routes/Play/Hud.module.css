@@ -1,0 +1,98 @@
+.upperLeft,
+.upperRight,
+.lowerLeft,
+.lowerRight {
+  position: absolute;
+  font-family: var(--font-head);
+  text-transform: uppercase;
+  font-weight: 700;
+  font-variant-numeric: slashed-zero tabular-nums;
+  line-height: 1em;
+  pointer-events: none;
+  color: var(--accent);
+  z-index: 10;
+}
+
+.upperLeft {
+  text-align: left;
+  top: 40px;
+  left: 50px;
+  font-size: 1.3em;
+  transform: skew(5deg, 5deg);
+  pointer-events: all;
+}
+
+.upperLeft a,
+.upperRight a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.upperLeft a:hover,
+.upperRight a:hover {
+  color: var(--text);
+}
+
+.upperRight {
+  text-align: right;
+  top: 40px;
+  right: 50px;
+  font-size: 1.3em;
+  transform: skew(-5deg, -5deg);
+  pointer-events: all;
+}
+
+.lowerLeft {
+  bottom: 5px;
+  left: 50px;
+  transform: skew(-5deg, -5deg);
+  width: 260px;
+}
+
+.timer {
+  margin: 0;
+  font-size: 4em;
+  line-height: 1em;
+  color: var(--text);
+}
+
+.score {
+  margin: 0;
+  font-size: 10em;
+  line-height: 1em;
+}
+
+.lowerRight {
+  bottom: 70px;
+  right: 50px;
+  transform: skew(5deg, 5deg);
+  height: 40px;
+  width: 150px;
+  background: #000;
+}
+
+.lowerRight > div {
+  height: 100%;
+  background: var(--accent);
+}
+
+@media only screen and (max-width: 900px) {
+  .upperLeft {
+    font-size: 1.1em;
+  }
+  .upperRight {
+    font-size: 1.1em;
+  }
+  .lowerLeft {
+    bottom: 30px;
+  }
+  .score {
+    font-size: 6em;
+  }
+  .timer {
+    font-size: 3em;
+  }
+  .lowerRight {
+    bottom: 50px;
+  }
+}

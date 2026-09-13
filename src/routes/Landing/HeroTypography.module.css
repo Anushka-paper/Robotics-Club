@@ -1,0 +1,145 @@
+.heroContainer {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 80px clamp(20px, 5vw, 64px);
+  pointer-events: none; /* Let clicks pass through to 3D canvas if needed */
+}
+
+/* Very subtle background gradient to protect text readability */
+.readabilityGradient {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 60%;
+  background: linear-gradient(90deg, rgba(5,5,5,0.7) 0%, rgba(10,10,10,0.4) 50%, transparent 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.heroContent {
+  max-width: 650px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.eyebrow {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(12px, 1.5vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #F4C50D;
+  text-transform: uppercase;
+  margin-bottom: clamp(24px, 3vh, 32px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eyebrow span {
+  font-size: 10px;
+  display: inline-block;
+}
+
+.heading {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  color: #F2F0EB;
+  margin: 0 0 clamp(24px, 3vh, 32px) 0;
+  letter-spacing: -0.045em;
+  /* Desktop clamp */
+  font-size: clamp(72px, 7vw, 122px);
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.heading > div {
+  /* This prevents margin collapse and helps GSAP slide animation */
+  display: block;
+  transform-origin: left bottom;
+}
+
+.accentWord {
+  color: #F4C50D;
+  text-shadow: 0 0 30px rgba(244, 197, 13, 0.15); /* very subtle glow */
+}
+
+.description {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(16px, 2vw, 20px);
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(242, 240, 235, 0.72);
+  max-width: 480px;
+  margin: 0 0 clamp(28px, 4vh, 36px) 0;
+}
+
+.tagline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(11px, 1.2vw, 14px);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(242, 240, 235, 0.85);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.taglineLine {
+  color: #F4C50D;
+  letter-spacing: -2px;
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.microTextContainer {
+  position: absolute;
+  top: 60vh;
+  right: -20vw; /* Positioned near the robot, out of the main column */
+  display: flex;
+  flex-direction: column;
+  pointer-events: none;
+}
+
+.microText {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(9px, 1vw, 11px);
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.25);
+  text-transform: uppercase;
+}
+
+/* Tablet Media Query */
+@media (max-width: 1024px) {
+  .heading {
+    font-size: clamp(58px, 9vw, 82px);
+  }
+  .microTextContainer {
+    display: none; /* Hide microtext on smaller screens to avoid clutter */
+  }
+}
+
+/* Mobile Media Query */
+@media (max-width: 768px) {
+  .heroContainer {
+    padding-top: 100px; /* Leave room for header */
+  }
+  .heading {
+    font-size: clamp(46px, 14vw, 68px);
+    line-height: 0.92;
+  }
+  .readabilityGradient {
+    width: 100%;
+    background: linear-gradient(180deg, rgba(5,5,5,0.7) 0%, rgba(10,10,10,0.5) 40%, transparent 100%);
+  }
+}
