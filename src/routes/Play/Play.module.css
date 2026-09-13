@@ -1,0 +1,96 @@
+.page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #020209;
+  touch-action: none;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(2, 2, 9, 0.72);
+  backdrop-filter: blur(2px);
+}
+
+.panel {
+  max-width: 440px;
+  border: 1px solid var(--hair);
+  background: var(--surface);
+  padding: 36px;
+  text-align: left;
+}
+
+.panel h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+  color: var(--text);
+}
+
+.panel p {
+  margin: 0 0 26px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.start {
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 20px;
+  cursor: pointer;
+}
+
+.back {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.back:hover {
+  color: var(--text);
+}
+
+.touchNote {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  background: var(--surface);
+  border: 1px solid var(--hair);
+  color: var(--muted);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.touchNote button {
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.touchNote a {
+  color: var(--text);
+  text-decoration: none;
+}

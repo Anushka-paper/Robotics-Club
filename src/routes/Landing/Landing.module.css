@@ -1,0 +1,355 @@
+.page {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+/* Fixed dark vignette so text stays legible if a bright object drifts behind it. */
+.page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(14, 15, 18, 0.72) 0%,
+    rgba(14, 15, 18, 0.32) 42%,
+    rgba(14, 15, 18, 0) 68%
+  );
+}
+
+.poster {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 68% 38%, #2a2d34 0%, var(--bg) 70%),
+    var(--bg);
+}
+
+/* --- scroll-driven mode --- */
+.scroll {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scroll > div > .section {
+  scroll-snap-align: start;
+}
+
+.section {
+  display: block;
+}
+
+.card {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 760px;
+  padding: 80px clamp(20px, 5vw, 56px);
+  pointer-events: none;
+}
+
+.eyebrow {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: clamp(10px, 1.2vw, 12px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #F4C50D;
+  margin-bottom: clamp(20px, 2.5vh, 28px);
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* GSAP initial state set in JS */
+}
+
+.eyebrow span {
+  font-size: 8px;
+  display: inline-block;
+}
+
+.tagline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-top: 24px;
+  text-transform: uppercase;
+}
+
+.card h2 {
+  margin: 0 0 clamp(24px, 3vh, 30px);
+  color: #F1EFEA;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 600;
+  line-height: 0.92;
+  letter-spacing: -0.045em;
+  font-size: clamp(56px, 6vw, 88px);
+  max-width: 650px;
+  white-space: pre-wrap;
+}
+
+/* Yellow accent class applied via JS or span */
+.card h2 .accentWord {
+  color: #F4C50D;
+  text-shadow: 0 0 25px rgba(244, 197, 13, 0.12);
+}
+
+.card p {
+  margin: 0;
+  color: #A9A9A6 !important;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 400;
+  font-size: clamp(18px, 1.8vw, 20px);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  max-width: 560px;
+}
+
+/* subtle vertical progress tick, right edge */
+.progress {
+  position: fixed;
+  top: 50%;
+  right: 22px;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 120px;
+  background: var(--hair);
+  z-index: 10;
+}
+
+.progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: top;
+  transform: scaleY(0);
+}
+
+/* --- reduced-motion / static mode --- */
+.scrollStatic {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.scrollStatic .section {
+  min-height: auto;
+  display: block;
+}
+
+.scrollStatic .card {
+  position: static;
+  height: auto;
+  padding: 64px clamp(20px, 5vw, 56px);
+}
+
+.scrollStatic .card + .card {
+  border-top: 1px solid var(--hair);
+}
+
+/* --- call to action / final section --- */
+.cta {
+  position: relative;
+  z-index: 2;
+  background: transparent;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ctaInner {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(60px, 12vh, 120px) clamp(20px, 4vw, 56px);
+}
+
+.ctaLayout {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 64px;
+}
+
+.ctaTextContainer {
+  flex: 0 0 auto;
+  max-width: 480px;
+}
+
+.ctaTextContainer h2 {
+  margin: 0 0 0.5em;
+  font-family: "Space Grotesk", var(--font-head);
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+
+.ctaTextContainer p {
+  margin: 0 0 2em;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1.65;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--font-head);
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 14px 24px;
+  text-decoration: none;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.ctaButton:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+/* CARDS */
+.cardsGrid {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.socialCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: rgba(22, 24, 29, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  min-height: 140px;
+  width: 180px; /* Fixed width to match visual */
+  text-decoration: none;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, background 0.3s ease;
+  overflow: hidden;
+  pointer-events: auto; /* Ensure it's clickable since parent .cta might have quirks */
+}
+
+.socialCard:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(22, 24, 29, 0.7);
+}
+
+.iconWrapper {
+  color: var(--muted);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s ease;
+  margin-bottom: 24px;
+}
+
+.socialCard:hover .iconWrapper {
+  color: var(--text);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.textWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cardTitle {
+  font-family: "Space Grotesk", var(--font-head);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-transform: uppercase;
+}
+
+.cardHandle {
+  font-family: "Inter", var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 0.3s ease;
+}
+
+.socialCard:hover .cardHandle {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.arrow {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  color: var(--text); /* Set permanently visible based on image */
+  font-size: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.socialCard:hover .arrow {
+  transform: translate(2px, -2px);
+}
+
+@media (max-width: 1200px) {
+  .ctaLayout {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+  }
+  .cardsGrid {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .socialCard {
+    flex: 1 1 calc(50% - 16px);
+    width: auto;
+  }
+}
+
+@media (max-width: 1024px) {
+  .card h2 {
+    font-size: clamp(48px, 8vw, 70px);
+  }
+}
+
+@media (max-width: 768px) {
+  .card h2 {
+    font-size: clamp(42px, 12vw, 62px);
+    line-height: 0.94;
+  }
+  .card p {
+    font-size: clamp(16px, 4vw, 18px);
+  }
+  .eyebrow {
+    font-size: clamp(10px, 3vw, 11px);
+  }
+}
+
+
+@media (max-width: 560px) {
+  .socialCard {
+    flex: 1 1 100%;
+  }
+}

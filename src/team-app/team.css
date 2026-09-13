@@ -1,0 +1,108 @@
+/* Robotics Club, MMMUT — Team section styles
+   Drop-in CSS: keyframes + hover transitions that Tailwind's
+   utility classes can't express on their own. Everything else
+   in the components is plain Tailwind. */
+
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap");
+
+@font-face {
+  font-family: 'Space Ranger';
+  src: local('Space Ranger'),
+       url('/team-fonts/spaceranger.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Space Ranger';
+  src: local('Space Ranger Bold'),
+       url('/team-fonts/spacerangerbold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-heading {
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-space-ranger {
+  font-family: 'Space Ranger', sans-serif;
+}
+
+/* ---------- Marquee ---------- */
+
+@keyframes team-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.team-marquee-track {
+  animation: team-marquee-scroll var(--marquee-duration, 30s) linear infinite;
+  will-change: transform;
+}
+
+/* Pause on mouse hover and on keyboard focus of any card inside */
+.team-marquee:hover .team-marquee-track,
+.team-marquee:focus-within .team-marquee-track {
+  animation-play-state: paused;
+}
+
+/* ---------- Card ---------- */
+
+.team-card {
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.team-card:hover,
+.team-card:focus-within,
+.team-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: #c97c3e;
+  outline: none;
+}
+
+.team-card-image {
+  filter: grayscale(1);
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.team-card:hover .team-card-image,
+.team-card:focus-within .team-card-image {
+  filter: grayscale(0);
+  transform: scale(1.03);
+}
+
+/* ---------- Utilities (in case the project's Tailwind build
+   doesn't include the official line-clamp plugin) ---------- */
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- Motion & accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .team-marquee-track {
+    animation: none;
+  }
+  .team-card,
+  .team-card-image {
+    transition: none;
+  }
+}
