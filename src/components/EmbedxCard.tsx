@@ -101,7 +101,7 @@ export default function EmbedxCard() {
             {/* Right Column: Button */}
             <div className="flex-shrink-0 mt-2 md:mt-0" style={{ transform: "translateZ(30px)" }}>
               <button 
-                onClick={() => router.push("/embedx")}
+                onClick={() => router.push("/embedx/register")}
                 className="group/btn relative overflow-hidden bg-[#3b82f6] hover:bg-[#2563eb] text-white px-5 py-2.5 rounded-md font-bold text-[12px] md:text-[13px] transition-all duration-300 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] whitespace-nowrap"
               >
                 <span className="relative z-10 font-['Inter']">Register Now</span>
