@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { EMBEDX_CONFIG } from "@/config/embedx";
 import { teamDetailsSchema, memberSchema, paymentSchema } from "@/lib/validation";
+import { Camera, AlertTriangle, Search, Check, CheckCircle2 } from "lucide-react";
 
 // ─────────────────────────────────────────────
 // TYPES
@@ -110,7 +111,7 @@ function StepIndicator({ currentStep, skipMembers }: { currentStep: number; skip
                     transition: "all 0.25s ease",
                   }}
                 >
-                  {state === "complete" ? "✓" : `0${stepDisplay}`}
+                  {state === "complete" ? <Check size={14} /> : `0${stepDisplay}`}
                 </div>
                 <span
                   style={{
@@ -182,7 +183,7 @@ function Field({
           role="alert"
           style={{ fontSize: "0.75rem", color: "#f87171", display: "flex", alignItems: "center", gap: "0.25rem" }}
         >
-          <span aria-hidden>⚠</span> {error}
+          <AlertTriangle size={12} /> {error}
         </span>
       )}
     </div>
@@ -631,7 +632,9 @@ function Step3({
             </div>
           ) : (
             <div>
-              <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>📷</div>
+              <div style={{ fontSize: "2rem", marginBottom: "0.5rem", color: "#38bdf8", display: "flex", justifyContent: "center" }}>
+                <Camera size={32} />
+              </div>
               <div style={{ color: "#94a3b8", fontSize: "0.875rem", marginBottom: "0.25rem" }}>
                 Click or drag &amp; drop payment screenshot
               </div>
@@ -652,20 +655,23 @@ function Step3({
         </div>
       </Field>
 
-      <div style={{ padding: "0.75rem 1rem", background: "rgba(245, 158, 11, 0.06)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "0.5rem", fontSize: "0.8125rem", color: "#fbbf24", lineHeight: 1.5 }}>
-        ⚠ {EMBEDX_CONFIG.payment.note}
+      <div style={{ padding: "0.75rem 1rem", background: "rgba(245, 158, 11, 0.06)", border: "1px solid rgba(245, 158, 11, 0.2)", borderRadius: "0.5rem", fontSize: "0.8125rem", color: "#fbbf24", lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+        <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+        <span>{EMBEDX_CONFIG.payment.note}</span>
       </div>
 
-      <div style={{ padding: "0.75rem 1rem", background: "rgba(56, 189, 248, 0.05)", border: "1px solid rgba(56, 189, 248, 0.15)", borderRadius: "0.5rem", fontSize: "0.8125rem", color: "#7dd3fc", lineHeight: 1.5 }}>
-        🔍 Your registration will be confirmed only after manual payment verification by the Robotics Club MMMUT admin team.
+      <div style={{ padding: "0.75rem 1rem", background: "rgba(56, 189, 248, 0.05)", border: "1px solid rgba(56, 189, 248, 0.15)", borderRadius: "0.5rem", fontSize: "0.8125rem", color: "#7dd3fc", lineHeight: 1.5, display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+        <Search size={16} style={{ flexShrink: 0, marginTop: "2px" }} />
+        <span>Your registration will be confirmed only after manual payment verification by the Robotics Club MMMUT admin team.</span>
       </div>
 
       {submitError && (
         <div
           role="alert"
-          style={{ padding: "0.875rem 1rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "0.5rem", fontSize: "0.875rem", color: "#f87171", lineHeight: 1.5 }}
+          style={{ padding: "0.875rem 1rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "0.5rem", fontSize: "0.875rem", color: "#f87171", lineHeight: 1.5, display: "flex", alignItems: "center", gap: "0.5rem" }}
         >
-          ⚠ {submitError}
+          <AlertTriangle size={16} />
+          <span>{submitError}</span>
         </div>
       )}
 
@@ -681,16 +687,19 @@ function Step3({
           className="btn-primary"
           onClick={handleSubmit}
           disabled={submitting}
-          style={{ minWidth: "180px", position: "relative" }}
+          style={{ minWidth: "180px", position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.4rem" }}
           aria-busy={submitting}
         >
           {submitting ? (
             <>
               <span style={{ display: "inline-block", width: "14px", height: "14px", border: "2px solid rgba(0,13,26,0.4)", borderTopColor: "#000d1a", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
-              Submitting Registration...
+              <span>Submitting Registration...</span>
             </>
           ) : (
-            "Register ✓"
+            <>
+              <span>Register</span>
+              <Check size={16} />
+            </>
           )}
         </button>
       </div>

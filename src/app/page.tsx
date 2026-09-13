@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Cpu, Bot, Trophy, ArrowRight } from "lucide-react";
 
 export default function HomePage() {
   return (
@@ -28,32 +29,31 @@ export default function HomePage() {
         <div className="glass-card" style={{ padding: "1.5rem", marginBottom: "2rem", textAlign: "left" }}>
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap" }}>
             {[
-              { icon: "⚙️", label: "Embedded Systems", sub: "Build. Program. Deploy." },
-              { icon: "🤖", label: "Robotics", sub: "Design. Automate. Innovate." },
-              { icon: "🏆", label: "Team Event", sub: "1 to 3 members" },
-            ].map((item) => (
-              <div key={item.label} style={{ flex: "1 1 150px", padding: "0.875rem", background: "rgba(0,240,255,0.04)", borderRadius: "0.5rem", border: "1px solid rgba(0,240,255,0.08)" }}>
-                <div style={{ fontSize: "1.25rem", marginBottom: "0.25rem" }}>{item.icon}</div>
-                <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#e2e8f0" }}>{item.label}</div>
-                <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.2rem" }}>{item.sub}</div>
-              </div>
-            ))}
+              { icon: Cpu, label: "Embedded Systems", sub: "Build. Program. Deploy." },
+              { icon: Bot, label: "Robotics", sub: "Design. Automate. Innovate." },
+              { icon: Trophy, label: "Team Event", sub: "1 to 3 members" },
+            ].map((item) => {
+              const IconComp = item.icon;
+              return (
+                <div key={item.label} style={{ flex: "1 1 150px", padding: "0.875rem", background: "rgba(0,240,255,0.04)", borderRadius: "0.5rem", border: "1px solid rgba(0,240,255,0.08)" }}>
+                  <div style={{ fontSize: "1.25rem", marginBottom: "0.35rem", color: "#00f0ff" }}>
+                    <IconComp size={24} />
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: "0.875rem", color: "#e2e8f0" }}>{item.label}</div>
+                  <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "0.2rem" }}>{item.sub}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* CTA Buttons */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem", width: "100%" }}>
-          <Link href="/embedx/register" style={{ width: "100%", maxWidth: "320px" }}>
-            <button className="btn-primary" style={{ fontSize: "1rem", padding: "0.875rem 2.5rem", width: "100%", fontFamily: "var(--font-space-grotesk)" }}>
-              Register Your Team →
-            </button>
-          </Link>
-          <Link href="/embedx/login" style={{ width: "100%", maxWidth: "320px" }}>
-            <button className="btn-secondary" style={{ fontSize: "0.9375rem", padding: "0.875rem 2.5rem", width: "100%", fontFamily: "var(--font-space-grotesk)" }}>
-              Login to Dashboard
-            </button>
-          </Link>
-        </div>
+        {/* CTA Button */}
+        <Link href="/embedx/register">
+          <button className="btn-primary" style={{ fontSize: "1rem", padding: "0.875rem 2.5rem", width: "100%", maxWidth: "320px", fontFamily: "var(--font-space-grotesk)", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+            <span>Register Your Team</span>
+            <ArrowRight size={18} />
+          </button>
+        </Link>
 
         <p style={{ marginTop: "1rem", fontSize: "0.8125rem", color: "#334155" }}>
           Kit fee required upon registration · Verification by Robotics Club admin

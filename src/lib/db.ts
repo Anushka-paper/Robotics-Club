@@ -1,6 +1,4 @@
-import { DatabaseSync } from "node:sqlite";
-import path from "node:path";
-import fs from "node:fs";
+import mongoose, { Schema, Document, Model } from "mongoose";
 import crypto from "node:crypto";
 
 export interface MemberItem {
@@ -31,8 +29,7 @@ export interface RegistrationRecord {
   updatedAt: string;
 }
 
-interface RawDbRow {
-  id: string;
+export interface IRegistrationDocument extends Document {
   registrationId: string;
   teamName: string;
   leaderName: string;
@@ -42,89 +39,142 @@ interface RawDbRow {
   mobile: string;
   email: string;
   memberCount: number;
-  members: string;
+  members: MemberItem[];
   utr: string;
   paymentScreenshotUrl: string;
   paymentScreenshotPath: string;
-  paymentStatus: string;
-  registrationStatus: string;
-  createdAt: string;
-  updatedAt: string;
+  paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
+  registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-// Global database instance singleton
-let dbInstance: DatabaseSync | null = null;
+const MemberSchema = new Schema<MemberItem>(
+  {
+    name: { type: String, required: true },
+    branch: { type: String, required: true },
+    year: { type: String, required: true },
+    email: { type: String, default: "" },
+  },
+  { _id: false }
+);
 
-export function getDatabase(): DatabaseSync {
-  if (dbInstance) {
-    return dbInstance;
+const RegistrationSchema = new Schema<IRegistrationDocument>(
+  {
+    registrationId: { type: String, required: true, unique: true, index: true },
+    teamName: { type: String, required: true },
+    leaderName: { type: String, required: true },
+    leaderBranch: { type: String, required: true },
+    leaderYear: { type: String, required: true },
+    mobile: { type: String, required: true },
+    email: { type: String, required: true, lowercase: true, index: true },
+    memberCount: { type: Number, required: true },
+    members: { type: [MemberSchema], default: [] },
+    utr: { type: String, required: true, unique: true, uppercase: true, index: true },
+    paymentScreenshotUrl: { type: String, required: true },
+    paymentScreenshotPath: { type: String, required: true },
+    paymentStatus: {
+      type: String,
+      enum: ["PENDING", "VERIFIED", "REJECTED"],
+      default: "PENDING",
+    },
+    registrationStatus: {
+      type: String,
+      enum: ["PENDING", "CONFIRMED", "REJECTED"],
+      default: "PENDING",
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Reuse model instance across Next.js API reloads
+let RegistrationModel: Model<IRegistrationDocument>;
+
+try {
+  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration");
+} catch {
+  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration", RegistrationSchema);
+}
+
+// Global cached connection for Next.js serverless/API routes
+interface MongooseCache {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var mongooseCache: MongooseCache | undefined;
+}
+
+const cached: MongooseCache = globalThis.mongooseCache || { conn: null, promise: null };
+if (!globalThis.mongooseCache) {
+  globalThis.mongooseCache = cached;
+}
+
+export async function connectToDatabase(): Promise<typeof mongoose> {
+  if (cached.conn && mongoose.connection.readyState === 1) {
+    return cached.conn;
   }
 
-  const dbDir = path.join(process.cwd(), "data");
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
+  const mongodbUri = process.env.MONGODB_URI || process.env.MONGODB_URL;
+
+  if (!mongodbUri) {
+    if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+      throw new Error(
+        "MONGODB_URI is not configured in Vercel Environment Variables. Please set MONGODB_URI in your Vercel Project Settings."
+      );
+    }
   }
 
-  const dbPath = path.join(dbDir, "embedx.db");
-  const db = new DatabaseSync(dbPath);
+  const targetUri = mongodbUri || "mongodb://localhost:27017/embedx";
 
-  // Enable WAL mode for high concurrency
-  db.exec("PRAGMA journal_mode = WAL;");
-  db.exec("PRAGMA foreign_keys = ON;");
+  if (!cached.promise) {
+    cached.promise = mongoose
+      .connect(targetUri, {
+        bufferCommands: false,
+        dbName: "embedx",
+        serverSelectionTimeoutMS: 6000, // 6 seconds fast timeout instead of hanging 30s
+      })
+      .then((m) => m);
+  }
 
-  // Create table schema
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS registrations (
-      id TEXT PRIMARY KEY,
-      registrationId TEXT UNIQUE NOT NULL,
-      teamName TEXT NOT NULL,
-      leaderName TEXT NOT NULL,
-      leaderRollNumber TEXT NOT NULL DEFAULT '',
-      leaderBranch TEXT NOT NULL,
-      leaderYear TEXT NOT NULL,
-      mobile TEXT NOT NULL,
-      email TEXT NOT NULL,
-      memberCount INTEGER NOT NULL,
-      members TEXT NOT NULL,
-      utr TEXT UNIQUE NOT NULL,
-      paymentScreenshotUrl TEXT NOT NULL,
-      paymentScreenshotPath TEXT NOT NULL,
-      paymentStatus TEXT NOT NULL DEFAULT 'PENDING',
-      registrationStatus TEXT NOT NULL DEFAULT 'PENDING',
-      createdAt TEXT NOT NULL,
-      updatedAt TEXT NOT NULL
+  try {
+    cached.conn = await cached.promise;
+  } catch (e) {
+    cached.promise = null;
+    cached.conn = null;
+    console.error("MongoDB Atlas connection error:", e);
+    throw new Error(
+      "Database connection timed out. Please check that your MongoDB Atlas 'Network Access' has IP 0.0.0.0/0 (Allow access from anywhere) enabled."
     );
-
-    CREATE INDEX IF NOT EXISTS idx_reg_email ON registrations(email);
-    CREATE INDEX IF NOT EXISTS idx_reg_regid ON registrations(registrationId);
-    CREATE INDEX IF NOT EXISTS idx_reg_utr ON registrations(utr);
-  `);
-
-  try {
-    db.exec("ALTER TABLE registrations ADD COLUMN leaderRollNumber TEXT NOT NULL DEFAULT '';");
-  } catch {
-    // Column already exists in newer databases.
   }
 
-  dbInstance = db;
-  return db;
+  return cached.conn;
 }
 
-function parseRow(row: RawDbRow | null | undefined): RegistrationRecord | null {
-  if (!row) return null;
-  let parsedMembers: MemberItem[] = [];
-  try {
-    parsedMembers = JSON.parse(row.members || "[]");
-  } catch {
-    parsedMembers = [];
-  }
-
+function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | null {
+  if (!doc) return null;
   return {
-    ...row,
-    leaderRollNumber: row.leaderRollNumber || "",
-    members: parsedMembers,
-    paymentStatus: row.paymentStatus as RegistrationRecord["paymentStatus"],
-    registrationStatus: row.registrationStatus as RegistrationRecord["registrationStatus"]
+    id: doc._id.toString(),
+    registrationId: doc.registrationId,
+    teamName: doc.teamName,
+    leaderName: doc.leaderName,
+    leaderBranch: doc.leaderBranch,
+    leaderYear: doc.leaderYear,
+    mobile: doc.mobile,
+    email: doc.email,
+    memberCount: doc.memberCount,
+    members: doc.members || [],
+    utr: doc.utr,
+    paymentScreenshotUrl: doc.paymentScreenshotUrl,
+    paymentScreenshotPath: doc.paymentScreenshotPath,
+    paymentStatus: doc.paymentStatus,
+    registrationStatus: doc.registrationStatus,
+    createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
+    updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
 }
 
@@ -137,77 +187,56 @@ export function generateRegistrationId(): string {
 export async function createRegistration(
   data: Omit<RegistrationRecord, "id" | "createdAt" | "updatedAt">
 ): Promise<RegistrationRecord> {
-  const db = getDatabase();
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  const membersJson = JSON.stringify(data.members || []);
+  await connectToDatabase();
 
-  const stmt = db.prepare(`
-    INSERT INTO registrations (
-      id, registrationId, teamName, leaderName, leaderRollNumber, leaderBranch, leaderYear,
-      mobile, email, memberCount, members, utr, paymentScreenshotUrl,
-      paymentScreenshotPath, paymentStatus, registrationStatus, createdAt, updatedAt
-    ) VALUES (
-      ?, ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?, ?,
-      ?, ?, ?, ?, ?
-    )
-  `);
+  const created = await RegistrationModel.create({
+    registrationId: data.registrationId,
+    teamName: data.teamName,
+    leaderName: data.leaderName,
+    leaderBranch: data.leaderBranch,
+    leaderYear: data.leaderYear,
+    mobile: data.mobile,
+    email: data.email.toLowerCase().trim(),
+    memberCount: data.memberCount,
+    members: data.members || [],
+    utr: data.utr.trim().toUpperCase(),
+    paymentScreenshotUrl: data.paymentScreenshotUrl,
+    paymentScreenshotPath: data.paymentScreenshotPath,
+    paymentStatus: data.paymentStatus || "PENDING",
+    registrationStatus: data.registrationStatus || "PENDING",
+  });
 
-  stmt.run(
-    id,
-    data.registrationId,
-    data.teamName,
-    data.leaderName,
-    data.leaderRollNumber,
-    data.leaderBranch,
-    data.leaderYear,
-    data.mobile,
-    data.email,
-    data.memberCount,
-    membersJson,
-    data.utr.trim().toUpperCase(),
-    data.paymentScreenshotUrl,
-    data.paymentScreenshotPath,
-    data.paymentStatus || "PENDING",
-    data.registrationStatus || "PENDING",
-    now,
-    now
-  );
-
-  return {
-    id,
-    ...data,
-    createdAt: now,
-    updatedAt: now
-  };
+  return docToRecord(created)!;
 }
 
 export async function getRegistrationByRegistrationId(
   registrationId: string
 ): Promise<RegistrationRecord | null> {
-  const db = getDatabase();
-  const stmt = db.prepare("SELECT * FROM registrations WHERE registrationId = ? LIMIT 1");
-  const row = stmt.get(registrationId) as unknown as RawDbRow | undefined;
-  return parseRow(row);
+  await connectToDatabase();
+  const doc = await RegistrationModel.findOne({
+    registrationId: registrationId.trim().toUpperCase(),
+  }).exec();
+  return docToRecord(doc);
 }
 
 export async function getRegistrationByUtr(
   utr: string
 ): Promise<RegistrationRecord | null> {
-  const db = getDatabase();
-  const stmt = db.prepare("SELECT * FROM registrations WHERE utr = ? LIMIT 1");
-  const row = stmt.get(utr.trim().toUpperCase()) as unknown as RawDbRow | undefined;
-  return parseRow(row);
+  await connectToDatabase();
+  const doc = await RegistrationModel.findOne({
+    utr: utr.trim().toUpperCase(),
+  }).exec();
+  return docToRecord(doc);
 }
 
 export async function getRegistrationByEmail(
   email: string
 ): Promise<RegistrationRecord | null> {
-  const db = getDatabase();
-  const stmt = db.prepare("SELECT * FROM registrations WHERE LOWER(email) = LOWER(?) LIMIT 1");
-  const row = stmt.get(email.trim()) as unknown as RawDbRow | undefined;
-  return parseRow(row);
+  await connectToDatabase();
+  const doc = await RegistrationModel.findOne({
+    email: email.trim().toLowerCase(),
+  }).exec();
+  return docToRecord(doc);
 }
 
 export async function updateRegistrationStatus(
@@ -215,20 +244,63 @@ export async function updateRegistrationStatus(
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED",
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED"
 ): Promise<RegistrationRecord | null> {
-  const db = getDatabase();
-  const now = new Date().toISOString();
-  const stmt = db.prepare(`
-    UPDATE registrations
-    SET paymentStatus = ?, registrationStatus = ?, updatedAt = ?
-    WHERE registrationId = ?
-  `);
-  stmt.run(paymentStatus, registrationStatus, now, registrationId);
-  return getRegistrationByRegistrationId(registrationId);
+  await connectToDatabase();
+  const updated = await RegistrationModel.findOneAndUpdate(
+    { registrationId: registrationId.trim().toUpperCase() },
+    { paymentStatus, registrationStatus },
+    { new: true }
+  ).exec();
+  return docToRecord(updated);
 }
 
-export async function getAllRegistrations(): Promise<RegistrationRecord[]> {
-  const db = getDatabase();
-  const stmt = db.prepare("SELECT * FROM registrations ORDER BY createdAt DESC");
-  const rows = stmt.all() as unknown as RawDbRow[];
-  return rows.map((r) => parseRow(r)!);
+export async function getAllRegistrations(options?: {
+  status?: string;
+  query?: string;
+}): Promise<RegistrationRecord[]> {
+  await connectToDatabase();
+
+  const filter: Record<string, unknown> = {};
+
+  if (options?.status && options.status !== "ALL") {
+    filter.$or = [
+      { registrationStatus: options.status },
+      { paymentStatus: options.status },
+    ];
+  }
+
+  if (options?.query && options.query.trim() !== "") {
+    const q = options.query.trim();
+    const regex = new RegExp(q, "i");
+    filter.$or = [
+      { teamName: regex },
+      { leaderName: regex },
+      { email: regex },
+      { registrationId: regex },
+      { utr: regex },
+    ];
+  }
+
+  const docs = await RegistrationModel.find(filter)
+    .sort({ createdAt: -1 })
+    .exec();
+
+  return docs.map((doc) => docToRecord(doc)!);
+}
+
+export async function getRegistrationStats(): Promise<{
+  total: number;
+  pending: number;
+  confirmed: number;
+  rejected: number;
+}> {
+  await connectToDatabase();
+
+  const [total, pending, confirmed, rejected] = await Promise.all([
+    RegistrationModel.countDocuments(),
+    RegistrationModel.countDocuments({ registrationStatus: "PENDING" }),
+    RegistrationModel.countDocuments({ registrationStatus: "CONFIRMED" }),
+    RegistrationModel.countDocuments({ registrationStatus: "REJECTED" }),
+  ]);
+
+  return { total, pending, confirmed, rejected };
 }

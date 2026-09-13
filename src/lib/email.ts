@@ -157,3 +157,128 @@ export async function sendConfirmationEmail({ registration }: SendEmailParams) {
     return { success: false, error: String(error) };
   }
 }
+
+interface SendStatusEmailParams {
+  registration: RegistrationRecord;
+  status: "CONFIRMED" | "REJECTED";
+  notes?: string;
+}
+
+export async function sendStatusUpdateEmail({
+  registration,
+  status,
+  notes,
+}: SendStatusEmailParams) {
+  const host = process.env.SMTP_HOST || process.env.EMAIL_HOST;
+  const port = parseInt(process.env.SMTP_PORT || process.env.EMAIL_PORT || "587", 10);
+  const user = process.env.SMTP_USER || process.env.EMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.EMAIL_PASSWORD;
+  const from = process.env.EMAIL_FROM || '"Robotics Club MMMUT" <noreply@mmmut.ac.in>';
+
+  const isConfirmed = status === "CONFIRMED";
+  const subject = isConfirmed
+    ? `Registration Confirmed: ${registration.registrationId} — EmbedX 2026`
+    : `Action Required: Registration Status Update (${registration.registrationId}) — EmbedX 2026`;
+
+  const statusBadgeBg = isConfirmed ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)";
+  const statusBadgeBorder = isConfirmed ? "#22c55e" : "#ef4444";
+  const statusBadgeText = isConfirmed ? "#4ade80" : "#f87171";
+  const statusText = isConfirmed ? "CONFIRMED & VERIFIED" : "REJECTED / UNVERIFIED";
+
+  const messageText = isConfirmed
+    ? `Great news! Your kit fee payment (UTR: <strong>${registration.utr}</strong>) has been verified by the Robotics Club MMMUT team. Your team <strong>${registration.teamName}</strong> is officially registered for EmbedX 2026!`
+    : `We reviewed your registration submission and payment details for team <strong>${registration.teamName}</strong>. Unfortunately, we were unable to verify your payment receipt (UTR: <strong>${registration.utr}</strong>).`;
+
+  const notesHtml = notes
+    ? `<div style="background: rgba(255,255,255,0.03); border: 1px solid #334155; padding: 12px; border-radius: 6px; margin: 16px 0; font-size: 13px; color: #cbd5e1;"><strong>Admin Note:</strong> ${notes}</div>`
+    : "";
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${subject}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #030712; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #f8fafc;">
+  <div style="max-width: 600px; margin: 20px auto; background-color: #0b1222; border: 1px solid #1e293b; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); padding: 32px 24px; text-align: center; border-bottom: 1px solid #00f0ff33;">
+      <div style="font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: #38bdf8; font-weight: 700; margin-bottom: 6px;">
+        Robotics Club MMMUT
+      </div>
+      <h1 style="margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; color: #ffffff;">
+        EMBED<span style="color: #00f0ff;">X</span>
+      </h1>
+      <p style="margin: 6px 0 0 0; color: #94a3b8; font-size: 14px;">Status Update Notification</p>
+    </div>
+
+    <div style="padding: 32px 24px;">
+      <p style="font-size: 16px; line-height: 24px; color: #e2e8f0; margin-top: 0;">
+        Dear <strong>${registration.leaderName}</strong>,
+      </p>
+
+      <div style="background: ${statusBadgeBg}; border: 1px solid ${statusBadgeBorder}; border-radius: 8px; padding: 18px; margin: 20px 0; text-align: center;">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #94a3b8; font-weight: 600;">
+          Registration Status
+        </div>
+        <div style="font-size: 22px; font-weight: 800; letter-spacing: 1px; color: ${statusBadgeText}; margin: 6px 0;">
+          ${statusText}
+        </div>
+        <div style="font-size: 13px; color: #94a3b8; font-family: monospace;">
+          ${registration.registrationId}
+        </div>
+      </div>
+
+      <p style="font-size: 15px; line-height: 24px; color: #cbd5e1;">
+        ${messageText}
+      </p>
+
+      ${notesHtml}
+
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${process.env.NEXT_PUBLIC_APP_URL || ""}/embedx/dashboard/${registration.registrationId}" style="display: inline-block; background: #00f0ff; color: #030712; text-decoration: none; padding: 12px 28px; border-radius: 6px; font-weight: 700; font-size: 14px;">
+          View Your Dashboard →
+        </a>
+      </div>
+
+      <div style="border-top: 1px solid #1e293b; padding-top: 20px; font-size: 12px; color: #64748b; line-height: 18px;">
+        <p style="margin: 0 0 6px 0;">Robotics Club, Madan Mohan Malaviya University of Technology, Gorakhpur</p>
+        <p style="margin: 0;">For any questions, reach out to roboticsclub@mmmut.ac.in</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  if (!host || !user || !pass) {
+    console.log("------------------------------------------------------------");
+    console.log(`📧 [SIMULATED STATUS EMAIL] To: ${registration.email}`);
+    console.log(`Status: ${status} | ID: ${registration.registrationId}`);
+    console.log("------------------------------------------------------------");
+    return { success: true, simulated: true };
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+
+    const info = await transporter.sendMail({
+      from,
+      to: registration.email,
+      subject,
+      html: htmlContent,
+    });
+
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Failed to send status update email:", error);
+    return { success: false, error: String(error) };
+  }
+}
+

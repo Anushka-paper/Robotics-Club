@@ -60,26 +60,56 @@ export async function saveReceiptFile(
   const ext = path.extname(file.name).toLowerCase();
   const safeFilename = `${crypto.randomUUID()}${ext}`;
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", "receipts");
-  if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-  }
+  const uploadDir =
+    process.env.UPLOAD_DIR ||
+    path.join(process.cwd(), "public", "uploads", "receipts");
 
-  const serverPath = path.join(uploadDir, safeFilename);
+  const serverPath = path.join(/*turbopackIgnore: true*/ uploadDir, safeFilename);
   const publicUrl = `/uploads/receipts/${safeFilename}`;
 
   try {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    fs.writeFileSync(serverPath, buffer);
 
-    return {
-      url: publicUrl,
-      serverPath,
-      originalName: file.name,
-      mimeType: file.type,
-      sizeBytes: file.size,
-    };
+    // On Vercel serverless functions, the filesystem is read-only.
+    // Store receipt image as a base64 Data URL in MongoDB Atlas so it persists reliably.
+    if (process.env.VERCEL) {
+      const base64Data = buffer.toString("base64");
+      const dataUrl = `data:${file.type};base64,${base64Data}`;
+      return {
+        url: dataUrl,
+        serverPath: "vercel_base64",
+        originalName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      };
+    }
+
+    try {
+      if (!fs.existsSync(/*turbopackIgnore: true*/ uploadDir)) {
+        fs.mkdirSync(/*turbopackIgnore: true*/ uploadDir, { recursive: true });
+      }
+      fs.writeFileSync(serverPath, buffer);
+
+      return {
+        url: publicUrl,
+        serverPath,
+        originalName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      };
+    } catch {
+      // Fallback to base64 Data URL if filesystem write is prohibited
+      const base64Data = buffer.toString("base64");
+      const dataUrl = `data:${file.type};base64,${base64Data}`;
+      return {
+        url: dataUrl,
+        serverPath: "fallback_base64",
+        originalName: file.name,
+        mimeType: file.type,
+        sizeBytes: file.size,
+      };
+    }
   } catch (err) {
     console.error("File upload error:", err);
     return { error: "Payment screenshot upload failed. Please try again." };
