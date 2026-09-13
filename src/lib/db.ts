@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 
 export interface MemberItem {
   name: string;
+  rollNumber: string;
   branch: string;
   year: string;
   email: string;
@@ -52,6 +53,7 @@ export interface IRegistrationDocument extends Document {
 const MemberSchema = new Schema<MemberItem>(
   {
     name: { type: String, required: true },
+    rollNumber: { type: String, default: "" },
     branch: { type: String, required: true },
     year: { type: String, required: true },
     email: { type: String, default: "" },
@@ -64,6 +66,7 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
     registrationId: { type: String, required: true, unique: true, index: true },
     teamName: { type: String, required: true },
     leaderName: { type: String, required: true },
+    leaderRollNumber: { type: String, default: "" },
     leaderBranch: { type: String, required: true },
     leaderYear: { type: String, required: true },
     mobile: { type: String, required: true },
@@ -162,6 +165,7 @@ function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | nu
     registrationId: doc.registrationId,
     teamName: doc.teamName,
     leaderName: doc.leaderName,
+    leaderRollNumber: doc.leaderRollNumber || "",
     leaderBranch: doc.leaderBranch,
     leaderYear: doc.leaderYear,
     mobile: doc.mobile,
