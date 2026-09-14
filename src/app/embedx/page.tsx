@@ -382,6 +382,7 @@ export default function EmbedxPage() {
                   <tbody className="divide-y divide-blue-500/10">
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">ESP 8266</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">USB CABLE for ESP 8266</td><td className="px-4 py-2.5 text-center">1</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Arduino UNO</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Arduino UNO Cable</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">JUMPER WIRES</td><td className="px-4 py-2.5 text-center">3 set</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">SG90 SERVO MOTOR</td><td className="px-4 py-2.5 text-center">2</td></tr>
