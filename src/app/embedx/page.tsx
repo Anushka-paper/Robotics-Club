@@ -83,9 +83,7 @@ export default function EmbedxPage() {
 
       <div className="fixed inset-0 bg-gradient-to-b from-[#050810]/90 via-[#050810]/40 to-[#050810] pointer-events-none z-[2]" />
 
-      <Link href="/" className="fixed top-4 left-4 md:top-8 md:left-8 text-neutral-400 hover:text-white flex items-center gap-2 transition-colors z-50 uppercase tracking-widest text-[10px] md:text-xs font-bold font-mono bg-black/40 px-3 py-1.5 md:px-4 md:py-2 rounded-lg backdrop-blur-md border border-white/10">
-        &larr; Back
-      </Link>
+
 
       <div className="z-10 w-full flex flex-col">
         {/* Full Width Hero Banner with Spotlight Hover */}
@@ -389,8 +387,8 @@ export default function EmbedxPage() {
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">NRF24L01 Module</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Transistors (BC547, BC557)</td><td className="px-4 py-2.5 text-center">5</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Resistors (10 kOhm) + Capacitors</td><td className="px-4 py-2.5 text-center">5+5</td></tr>
-                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Current</td><td className="px-4 py-2.5 text-center">1</td></tr>
-                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Voltage</td><td className="px-4 py-2.5 text-center">1</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Current Sensor</td><td className="px-4 py-2.5 text-center">1</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Voltage Sensor</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Buzzer</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">LDR Sensor</td><td className="px-4 py-2.5 text-center">1</td></tr>
                   </tbody>

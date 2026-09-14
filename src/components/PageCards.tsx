@@ -37,9 +37,9 @@ export default function PageCards() {
             title="GALLERY"
             subtitle="Moments & Projects"
             imageUrl="/gallery.jpg"
-            actionText="View Gallery &rarr;"
-            href="/gallery"
-            onActionClick={() => router.push("/gallery")}
+            actionText="Coming Soon &rarr;"
+            href="#"
+            onActionClick={() => alert("Gallery is coming soon!")}
           />
         </div>
 
