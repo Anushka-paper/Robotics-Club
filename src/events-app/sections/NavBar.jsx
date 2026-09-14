@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const NavBar = () => {
   return (
-    <div className="fixed top-4 left-4 md:top-8 md:left-8 z-[100]">
+    <div className="fixed top-4 right-4 md:top-8 md:right-8 z-[100]">
       <Link
         href="/"
         aria-label="Robotics Club MMMUT"

@@ -69,7 +69,7 @@ export default function EmbedxCard() {
           {/* Background Image - Spans the entire full width and height of the banner */}
           <div 
             className="absolute inset-0 w-full h-full bg-cover bg-[center_35%] bg-no-repeat transition-transform duration-700 ease-out group-hover:scale-105"
-            style={{ backgroundImage: "url('/embedx-chip-bg.jpg')", transform: "translateZ(-10px)" }}
+            style={{ backgroundImage: "url('/embedx_banner_bg.jpg')", transform: "translateZ(-10px)" }}
           />
 
           {/* Strong gradient on the left for text readability, but semi-transparent so the background is visible everywhere */}
