@@ -144,6 +144,16 @@ export default function EmbedxPage() {
                   </span>
                 </button>
 
+              
+                <button
+                  onClick={() => router.push("/embedx/login")}
+                  className="relative overflow-hidden group bg-transparent border border-cyan-500/60 hover:border-cyan-300 text-cyan-300 hover:text-cyan-100 w-full sm:w-auto px-6 md:px-8 py-3.5 rounded-lg font-bold tracking-widest uppercase text-[11px] md:text-[12px] transition-all duration-300 hover:bg-cyan-500/10"
+                >
+                  <span className="relative z-10 flex items-center justify-center">
+                    Login to Dashboard
+                  </span>
+                </button>
+
                 <button
                   onClick={() => scrollToSection('Rules')}
                   className="relative overflow-hidden group bg-transparent border border-neutral-600 hover:border-white text-neutral-300 hover:text-white w-full sm:w-auto px-6 md:px-8 py-3.5 rounded-lg font-bold tracking-widest uppercase text-[11px] md:text-[12px] transition-all duration-300 hover:bg-white/5"
