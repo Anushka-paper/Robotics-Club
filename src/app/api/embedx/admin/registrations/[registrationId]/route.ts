@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRegistrationByRegistrationId, deleteRegistrationByRegistrationId } from "@/lib/db";
+import { isAuthorized, isSuperAdmin } from "@/lib/adminAuth";
 import fs from "node:fs";
 
 export const dynamic = "force-dynamic";
-
-function isAuthorized(request: NextRequest): boolean {
-  const expectedPassword = process.env.ADMIN_PASSWORD || "admin123";
-  const authHeader = request.headers.get("authorization") || "";
-  const customHeader = request.headers.get("x-admin-password") || "";
-  const cookiePass = request.cookies.get("embedx_admin_auth")?.value || "";
-
-  return (
-    authHeader.replace("Bearer ", "").trim() === expectedPassword ||
-    customHeader.trim() === expectedPassword ||
-    cookiePass === expectedPassword
-  );
-}
 
 export async function GET(
   request: NextRequest,
@@ -46,6 +34,12 @@ export async function DELETE(
 ) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
+  }
+  if (!isSuperAdmin(request)) {
+    return NextResponse.json(
+      { success: false, error: "Read-only access. Super admin required to delete." },
+      { status: 403 }
+    );
   }
 
   try {

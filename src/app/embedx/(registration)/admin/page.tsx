@@ -54,6 +54,7 @@ interface StatsData {
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState<boolean>(false);
   const [passkeyInput, setPasskeyInput] = useState<string>("");
   const [loginError, setLoginError] = useState<string>("");
   const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
@@ -75,6 +76,7 @@ export default function AdminDashboardPage() {
     const saved = localStorage.getItem("embedx_admin_passkey");
     if (saved) {
       setIsAuthenticated(true);
+      setIsSuperAdmin(localStorage.getItem("embedx_admin_role") === "super");
     }
   }, []);
 
@@ -141,7 +143,9 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success) {
         localStorage.setItem("embedx_admin_passkey", passkeyInput);
+        localStorage.setItem("embedx_admin_role", data.role || "readonly");
         setIsAuthenticated(true);
+        setIsSuperAdmin(data.role === "super");
         setPasskeyInput("");
       } else {
         setLoginError(data.error || "Invalid passkey.");
@@ -156,7 +160,9 @@ export default function AdminDashboardPage() {
   // Handle Logout
   const handleLogout = () => {
     localStorage.removeItem("embedx_admin_passkey");
+    localStorage.removeItem("embedx_admin_role");
     setIsAuthenticated(false);
+    setIsSuperAdmin(false);
   };
 
   // Copy UTR helper
@@ -557,6 +563,11 @@ export default function AdminDashboardPage() {
 
                       {/* Action Buttons */}
                       <td style={{ padding: "1rem", textAlign: "right" }}>
+                        {!isSuperAdmin ? (
+                          <span style={{ fontSize: "0.75rem", color: "#64748b", fontStyle: "italic" }}>
+                            View only
+                          </span>
+                        ) : (
                         <div style={{ display: "flex", gap: "0.4rem", justifyContent: "flex-end" }}>
                           {item.registrationStatus !== "CONFIRMED" && (
                             <button
@@ -604,6 +615,7 @@ export default function AdminDashboardPage() {
                             </button>
                           )}
                         </div>
+                        )}
                       </td>
                     </tr>
                   ))}

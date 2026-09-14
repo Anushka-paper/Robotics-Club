@@ -7,9 +7,22 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { password } = body;
 
-    const expectedPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const readonlyPassword = process.env.ADMIN_PASSWORD || "admin123";
+    const superPassword = process.env.SUPER_ADMIN_PASS || "admin_rc@2026";
 
-    if (!password || typeof password !== "string" || password !== expectedPassword) {
+    if (!password || typeof password !== "string") {
+      return NextResponse.json(
+        { success: false, error: "Invalid admin passkey." },
+        { status: 401 }
+      );
+    }
+
+    let role: "super" | "readonly";
+    if (password === superPassword) {
+      role = "super";
+    } else if (password === readonlyPassword) {
+      role = "readonly";
+    } else {
       return NextResponse.json(
         { success: false, error: "Invalid admin passkey." },
         { status: 401 }
@@ -19,10 +32,11 @@ export async function POST(request: NextRequest) {
     const response = NextResponse.json({
       success: true,
       message: "Admin authentication successful.",
-      token: expectedPassword,
+      token: password,
+      role,
     });
 
-    response.cookies.set("embedx_admin_auth", expectedPassword, {
+    response.cookies.set("embedx_admin_auth", password, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

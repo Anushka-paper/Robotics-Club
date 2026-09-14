@@ -107,6 +107,7 @@ export default function AdminRegistrationDetailPage() {
   const [confirmText, setConfirmText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
 
   useEffect(() => {
     const passkey = localStorage.getItem("embedx_admin_passkey");
@@ -114,6 +115,7 @@ export default function AdminRegistrationDetailPage() {
       router.replace("/embedx/admin");
       return;
     }
+    setIsSuperAdmin(localStorage.getItem("embedx_admin_role") === "super");
 
     if (!registrationId) return;
 
@@ -305,7 +307,8 @@ export default function AdminRegistrationDetailPage() {
           </div>
         )}
 
-        {/* ── Danger zone ── */}
+        {/* ── Danger zone (super admin only) ── */}
+        {isSuperAdmin && (
         <div
           className="glass-card"
           style={{
@@ -402,6 +405,7 @@ export default function AdminRegistrationDetailPage() {
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );
