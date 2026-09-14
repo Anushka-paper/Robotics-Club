@@ -171,6 +171,7 @@ export async function POST(request: NextRequest) {
       paymentScreenshotPath: uploadResult.serverPath,
       paymentStatus: "PENDING",
       registrationStatus: "PENDING",
+      score: 0
     });
 
     // --- Send confirmation email (non-blocking) ---
