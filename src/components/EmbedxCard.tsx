@@ -98,11 +98,17 @@ export default function EmbedxCard() {
               </p>
             </div>
 
-            {/* Right Column: Button */}
-            <div className="flex-shrink-0 mt-2 md:mt-0" style={{ transform: "translateZ(30px)" }}>
+            {/* Right Column: Buttons */}
+            <div className="flex-shrink-0 mt-2 md:mt-0 flex flex-row gap-2 md:gap-3" style={{ transform: "translateZ(30px)" }}>
+              <button 
+                onClick={() => router.push("/embedx/leaderboard")}
+                className="group/btn2 relative overflow-hidden bg-[#070b14]/50 border border-[#3b82f6]/40 hover:border-[#3b82f6] hover:bg-[#3b82f6]/20 text-white px-4 md:px-5 py-2 md:py-2.5 rounded-md font-bold text-[11px] md:text-[13px] transition-all duration-300 flex items-center justify-center shadow-none hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] whitespace-nowrap backdrop-blur-sm"
+              >
+                <span className="relative z-10 font-['Inter'] text-[#a1a1aa] group-hover/btn2:text-white transition-colors duration-300">Leaderboard</span>
+              </button>
               <button 
                 onClick={() => router.push("/embedx")}
-                className="group/btn relative overflow-hidden bg-[#3b82f6] hover:bg-[#2563eb] text-white px-5 py-2.5 rounded-md font-bold text-[12px] md:text-[13px] transition-all duration-300 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] whitespace-nowrap"
+                className="group/btn relative overflow-hidden bg-[#3b82f6] hover:bg-[#2563eb] text-white px-4 md:px-5 py-2 md:py-2.5 rounded-md font-bold text-[11px] md:text-[13px] transition-all duration-300 flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(59,130,246,0.3)] hover:shadow-[0_0_20px_rgba(59,130,246,0.5)] whitespace-nowrap"
               >
                 <span className="relative z-10 font-['Inter']">Register Now</span>
                 <span className="relative z-10 transition-transform duration-300 group-hover/btn:translate-x-1">

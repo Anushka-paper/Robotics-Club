@@ -26,6 +26,7 @@ export interface RegistrationRecord {
   paymentScreenshotPath: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  score: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +47,7 @@ export interface IRegistrationDocument extends Document {
   paymentScreenshotPath: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  score: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -86,6 +88,10 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
       enum: ["PENDING", "CONFIRMED", "REJECTED"],
       default: "PENDING",
     },
+    score: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -93,13 +99,34 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
 );
 
 // Reuse model instance across Next.js API reloads
-let RegistrationModel: Model<IRegistrationDocument>;
-
-try {
-  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration");
-} catch {
-  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration", RegistrationSchema);
+export interface ISystemSettingsDocument extends Document {
+  key: string;
+  value: any;
 }
+
+const SystemSettingsSchema = new Schema<ISystemSettingsDocument>({
+  key: { type: String, required: true, unique: true },
+  value: { type: Schema.Types.Mixed, required: true },
+});
+
+let Registration: Model<IRegistrationDocument>;
+let SystemSettings: Model<ISystemSettingsDocument>;
+
+if (mongoose.models.Registration) {
+  Registration = mongoose.model<IRegistrationDocument>("Registration");
+} else {
+  Registration = mongoose.model<IRegistrationDocument>("Registration", RegistrationSchema);
+}
+
+if (mongoose.models.SystemSettings) {
+  SystemSettings = mongoose.model<ISystemSettingsDocument>("SystemSettings");
+} else {
+  SystemSettings = mongoose.model<ISystemSettingsDocument>("SystemSettings", SystemSettingsSchema);
+}
+
+export { Registration, SystemSettings };
+
+const RegistrationModel = Registration;
 
 // Global cached connection for Next.js serverless/API routes
 interface MongooseCache {
@@ -177,6 +204,7 @@ function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | nu
     paymentScreenshotPath: doc.paymentScreenshotPath,
     paymentStatus: doc.paymentStatus,
     registrationStatus: doc.registrationStatus,
+    score: doc.score ?? 0,
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
@@ -208,6 +236,7 @@ export async function createRegistration(
     paymentScreenshotPath: data.paymentScreenshotPath,
     paymentStatus: data.paymentStatus || "PENDING",
     registrationStatus: data.registrationStatus || "PENDING",
+    score: data.score || 0,
   });
 
   return docToRecord(created)!;

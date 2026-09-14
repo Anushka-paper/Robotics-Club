@@ -152,6 +152,15 @@ export default function EmbedxPage() {
                     Problem Statements
                   </span>
                 </button>
+
+                <button
+                  onClick={() => router.push("/embedx/leaderboard")}
+                  className="relative overflow-hidden group bg-transparent border border-neutral-600 hover:border-blue-400 text-neutral-300 hover:text-white w-full sm:w-auto px-6 md:px-8 py-3.5 rounded-lg font-bold tracking-widest uppercase text-[11px] md:text-[12px] transition-all duration-300 hover:bg-blue-500/10"
+                >
+                  <span className="relative z-10 flex items-center justify-center">
+                    Leaderboard
+                  </span>
+                </button>
               </div>
             </div>
         </motion.div>
@@ -373,7 +382,9 @@ export default function EmbedxPage() {
                   <tbody className="divide-y divide-blue-500/10">
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">ESP 8266</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">USB CABLE for ESP 8266</td><td className="px-4 py-2.5 text-center">1</td></tr>
-                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">JUMPER WIRES</td><td className="px-4 py-2.5 text-center">3</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Arduino UNO</td><td className="px-4 py-2.5 text-center">1</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">Arduino UNO Cable</td><td className="px-4 py-2.5 text-center">1</td></tr>
+                    <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">JUMPER WIRES</td><td className="px-4 py-2.5 text-center">3 set</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">SG90 SERVO MOTOR</td><td className="px-4 py-2.5 text-center">2</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">IR SENSOR MODULE</td><td className="px-4 py-2.5 text-center">1</td></tr>
                     <tr className="hover:bg-blue-500/5 transition-colors"><td className="px-4 py-2.5">PIR Sensor (HC-SR501)</td><td className="px-4 py-2.5 text-center">1</td></tr>
