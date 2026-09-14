@@ -451,7 +451,13 @@ export default function AdminDashboardPage() {
 
                       {/* Team & Leader */}
                       <td style={{ padding: "1rem" }}>
-                        <div style={{ fontWeight: 700, color: "#f8fafc", fontSize: "0.95rem" }}>{item.teamName}</div>
+                        <Link
+                          href={`/embedx/admin/${item.registrationId}`}
+                          style={{ fontWeight: 700, color: "#f8fafc", fontSize: "0.95rem", textDecoration: "none" }}
+                          title="View full details"
+                        >
+                          {item.teamName}
+                        </Link>
                         <div style={{ fontSize: "0.8rem", color: "#cbd5e1", marginTop: "0.2rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
                           <Crown size={14} style={{ color: "#fbbf24" }} />
                           <span>{item.leaderName} ({item.leaderBranch} · Yr {item.leaderYear})</span>

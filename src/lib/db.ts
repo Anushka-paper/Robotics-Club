@@ -252,6 +252,16 @@ export async function getRegistrationByRegistrationId(
   return docToRecord(doc);
 }
 
+export async function deleteRegistrationByRegistrationId(
+  registrationId: string
+): Promise<RegistrationRecord | null> {
+  await connectToDatabase();
+  const doc = await RegistrationModel.findOneAndDelete({
+    registrationId: registrationId.trim().toUpperCase(),
+  }).exec();
+  return docToRecord(doc);
+}
+
 export async function getRegistrationByUtr(
   utr: string
 ): Promise<RegistrationRecord | null> {
