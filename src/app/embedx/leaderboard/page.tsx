@@ -16,31 +16,43 @@ interface Team {
 export default function LeaderboardPage() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isHidden, setIsHidden] = useState(false);
 
   useEffect(() => {
-    // Fetch leaderboard data from MongoDB API when the component mounts
-    const fetchLeaderboard = async () => {
+    // Fetch leaderboard data from MongoDB API
+    const fetchLeaderboard = async (isInitial = false) => {
+      if (isInitial) setIsLoading(true);
       try {
-        // TODO: Update this URL to match your actual API route for MongoDB
-        const response = await fetch('/api/embedx/leaderboard');
+        const response = await fetch(`/api/embedx/leaderboard?t=${Date.now()}`, { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         
         if (response.ok) {
           const data = await response.json();
-          // Assuming the API returns { teams: [...] } or just an array [...]
-          const fetchedTeams = data.teams || data || [];
-          setTeams(fetchedTeams);
-        } else {
-          // If API doesn't exist yet, it fails gracefully and leaves teams empty
-          console.log("Waiting for MongoDB API connection...");
+          if (data.hidden) {
+            setIsHidden(true);
+          } else {
+            setIsHidden(false);
+            const fetchedTeams = data.teams || data || [];
+            setTeams(fetchedTeams);
+          }
         }
       } catch (error) {
         console.error("Failed to fetch leaderboard data:", error);
       } finally {
-        setIsLoading(false);
+        if (isInitial) setIsLoading(false);
       }
     };
 
-    fetchLeaderboard();
+    fetchLeaderboard(true);
+
+    // Poll every 5 seconds for real-time updates without refreshing
+    const intervalId = setInterval(() => {
+      fetchLeaderboard(false);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
   }, []);
 
   // Sort teams: by score descending, then alphabetically
@@ -74,11 +86,26 @@ export default function LeaderboardPage() {
       {/* Main Content */}
       <div className="relative z-10 w-full max-w-3xl mx-auto pt-20 md:pt-28 px-4 md:px-6 pb-20">
 
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
-          animate={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.6 }}
-        >
+        {isHidden ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6 }}
+            className="bg-[#0a1120]/80 backdrop-blur-md rounded-2xl border border-blue-900/40 p-10 md:p-16 flex flex-col items-center justify-center text-center shadow-[0_0_30px_rgba(59,130,246,0.05)] mt-10"
+          >
+            <h1 className="text-3xl md:text-5xl font-black font-['Space_Grotesk'] tracking-widest uppercase mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-amber-500 drop-shadow-2xl">
+              Leaderboard Hidden
+            </h1>
+            <p className="text-neutral-400 font-mono tracking-wide text-sm md:text-base">
+              The live rankings are currently hidden by the administrators. Stay tuned!
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }} 
+            animate={{ opacity: 1, y: 0 }} 
+            transition={{ duration: 0.6 }}
+          >
           {/* CARD 1: Header */}
           <div className="bg-[#0a1120]/80 backdrop-blur-md rounded-2xl border border-blue-900/40 p-6 md:p-8 flex flex-col items-center justify-center text-center mb-6 shadow-[0_0_30px_rgba(59,130,246,0.05)]">
             <h1 className="text-3xl md:text-5xl font-black font-['Space_Grotesk'] tracking-widest uppercase mb-3 text-transparent bg-clip-text bg-gradient-to-r from-orange-500 via-amber-400 to-yellow-500 drop-shadow-2xl">
@@ -224,6 +251,7 @@ export default function LeaderboardPage() {
           </div>
 
         </motion.div>
+        )}
       </div>
     </div>
   );

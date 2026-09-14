@@ -22,6 +22,7 @@ import {
   ExternalLink,
   X,
   ArrowRight,
+  Trophy,
 } from "lucide-react";
 
 interface RegistrationItem {
@@ -236,6 +237,7 @@ export default function AdminDashboardPage() {
                 placeholder="Enter admin password..."
                 value={passkeyInput}
                 onChange={(e) => setPasskeyInput(e.target.value)}
+                suppressHydrationWarning
                 style={{
                   width: "100%",
                   padding: "0.75rem 1rem",
@@ -261,6 +263,7 @@ export default function AdminDashboardPage() {
               type="submit"
               disabled={isLoggingIn}
               className="btn-primary"
+              suppressHydrationWarning
               style={{ width: "100%", padding: "0.75rem", fontSize: "0.95rem", fontWeight: 600, display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}
             >
               <span>{isLoggingIn ? "Authenticating..." : "Access Dashboard"}</span>
@@ -299,7 +302,14 @@ export default function AdminDashboardPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: "0.75rem" }}>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <Link
+              href="/embedx/admin/leaderboard"
+              style={{ background: "rgba(251,191,36,0.15)", border: "1px solid rgba(251,191,36,0.4)", color: "#fbbf24", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem", textDecoration: "none" }}
+            >
+              <Trophy size={14} />
+              <span>Leaderboard</span>
+            </Link>
             <button
               onClick={fetchRegistrations}
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "#e2e8f0", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}

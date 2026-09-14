@@ -99,13 +99,34 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
 );
 
 // Reuse model instance across Next.js API reloads
-let RegistrationModel: Model<IRegistrationDocument>;
-
-try {
-  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration");
-} catch {
-  RegistrationModel = mongoose.model<IRegistrationDocument>("Registration", RegistrationSchema);
+export interface ISystemSettingsDocument extends Document {
+  key: string;
+  value: any;
 }
+
+const SystemSettingsSchema = new Schema<ISystemSettingsDocument>({
+  key: { type: String, required: true, unique: true },
+  value: { type: Schema.Types.Mixed, required: true },
+});
+
+let Registration: Model<IRegistrationDocument>;
+let SystemSettings: Model<ISystemSettingsDocument>;
+
+if (mongoose.models.Registration) {
+  Registration = mongoose.model<IRegistrationDocument>("Registration");
+} else {
+  Registration = mongoose.model<IRegistrationDocument>("Registration", RegistrationSchema);
+}
+
+if (mongoose.models.SystemSettings) {
+  SystemSettings = mongoose.model<ISystemSettingsDocument>("SystemSettings");
+} else {
+  SystemSettings = mongoose.model<ISystemSettingsDocument>("SystemSettings", SystemSettingsSchema);
+}
+
+export { Registration, SystemSettings };
+
+const RegistrationModel = Registration;
 
 // Global cached connection for Next.js serverless/API routes
 interface MongooseCache {
