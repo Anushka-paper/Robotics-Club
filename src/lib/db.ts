@@ -26,6 +26,7 @@ export interface RegistrationRecord {
   paymentScreenshotPath: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  score: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -46,6 +47,7 @@ export interface IRegistrationDocument extends Document {
   paymentScreenshotPath: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  score: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -85,6 +87,10 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
       type: String,
       enum: ["PENDING", "CONFIRMED", "REJECTED"],
       default: "PENDING",
+    },
+    score: {
+      type: Number,
+      default: 0,
     },
   },
   {
@@ -177,6 +183,7 @@ function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | nu
     paymentScreenshotPath: doc.paymentScreenshotPath,
     paymentStatus: doc.paymentStatus,
     registrationStatus: doc.registrationStatus,
+    score: doc.score ?? 0,
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
@@ -208,6 +215,7 @@ export async function createRegistration(
     paymentScreenshotPath: data.paymentScreenshotPath,
     paymentStatus: data.paymentStatus || "PENDING",
     registrationStatus: data.registrationStatus || "PENDING",
+    score: data.score || 0,
   });
 
   return docToRecord(created)!;
