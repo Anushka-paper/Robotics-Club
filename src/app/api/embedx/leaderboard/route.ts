@@ -18,9 +18,12 @@ export async function GET(request: Request) {
     // Get the Registration model
     const RegistrationModel = mongoose.model('Registration');
     
-    // Fetch all registered teams (you can filter by registrationStatus: "CONFIRMED" if needed later)
+    // Only show teams whose payment has been verified by an admin
     // We fetch their _id, teamName, and score
-    const teams = await RegistrationModel.find({}, 'teamName score _id').lean();
+    const teams = await RegistrationModel.find(
+      { paymentStatus: 'VERIFIED' },
+      'teamName score _id'
+    ).lean();
 
     const formattedTeams = teams.map((team: any) => ({
       id: team._id.toString(),

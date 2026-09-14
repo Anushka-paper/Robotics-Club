@@ -15,6 +15,11 @@ export default function AdminLeaderboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isHidden, setIsHidden] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  useEffect(() => {
+    setIsSuperAdmin(localStorage.getItem("embedx_admin_role") === "super");
+  }, []);
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -94,7 +99,8 @@ export default function AdminLeaderboardPage() {
             Embed<span className="neon-text">X</span> Live Rankings
           </h1>
           <div style={{ display: "flex", gap: "0.75rem" }}>
-            <button 
+            {isSuperAdmin && (
+            <button
               onClick={toggleHidden}
               disabled={isUpdating}
               style={{ 
@@ -115,7 +121,8 @@ export default function AdminLeaderboardPage() {
               {isHidden ? <EyeOff size={16} /> : <Eye size={16} />}
               {isUpdating ? "Updating..." : isHidden ? "Leaderboard Hidden" : "Hide Leaderboard"}
             </button>
-            <Link 
+            )}
+            <Link
               href="/embedx/admin"
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "#e2e8f0", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "0.4rem", textDecoration: "none" }}
             >

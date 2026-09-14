@@ -1,16 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { connectToDatabase, SystemSettings } from "@/lib/db";
+import { isAuthorized, isSuperAdmin } from "@/lib/adminAuth";
 
 export const dynamic = "force-dynamic";
 
-const checkAdminAuth = (request: NextRequest) => {
-  const passkey = request.headers.get("x-admin-password");
-  const expectedPassword = process.env.ADMIN_PASSWORD || "admin123";
-  return passkey === expectedPassword;
-};
-
 export async function GET(request: NextRequest) {
-  if (!checkAdminAuth(request)) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
 
@@ -28,8 +23,14 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!checkAdminAuth(request)) {
+  if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
+  }
+  if (!isSuperAdmin(request)) {
+    return NextResponse.json(
+      { success: false, error: "Read-only access. Super admin required to change settings." },
+      { status: 403 }
+    );
   }
 
   try {

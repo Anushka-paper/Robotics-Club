@@ -5,24 +5,9 @@ import {
   updateRegistrationStatus,
 } from "@/lib/db";
 import { sendStatusUpdateEmail } from "@/lib/email";
+import { isAuthorized, isSuperAdmin } from "@/lib/adminAuth";
 
 export const dynamic = "force-dynamic";
-
-function isAuthorized(request: NextRequest): boolean {
-  const expectedPassword = process.env.ADMIN_PASSWORD || "admin123";
-  const authHeader = request.headers.get("authorization") || "";
-  const customHeader = request.headers.get("x-admin-password") || "";
-  const cookiePass = request.cookies.get("embedx_admin_auth")?.value || "";
-
-  if (
-    authHeader.replace("Bearer ", "").trim() === expectedPassword ||
-    customHeader.trim() === expectedPassword ||
-    cookiePass === expectedPassword
-  ) {
-    return true;
-  }
-  return false;
-}
 
 export async function GET(request: NextRequest) {
   if (!isAuthorized(request)) {
@@ -56,6 +41,12 @@ export async function GET(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
+  }
+  if (!isSuperAdmin(request)) {
+    return NextResponse.json(
+      { success: false, error: "Read-only access. Super admin required to change status." },
+      { status: 403 }
+    );
   }
 
   try {

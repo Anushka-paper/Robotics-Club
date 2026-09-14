@@ -7,8 +7,10 @@ import { ArrowLeft } from "lucide-react";
 export default function GlobalBackButton() {
   const pathname = usePathname();
 
-  // Do not show on the home page
-  if (pathname === "/") return null;
+  // Do not show on the home page, or under /embedx — that section already
+  // has its own back link (info page) and sticky header (registration flow),
+  // so this would just stack on top of them.
+  if (pathname === "/" || pathname.startsWith("/embedx")) return null;
 
   return (
     <Link
