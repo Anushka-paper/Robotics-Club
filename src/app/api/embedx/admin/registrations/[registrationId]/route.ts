@@ -75,6 +75,12 @@ export async function PATCH(
   if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
   }
+  if (!isSuperAdmin(request)) {
+    return NextResponse.json(
+      { success: false, error: "Read-only access. Super admin required to edit." },
+      { status: 403 }
+    );
+  }
 
   try {
     const { registrationId } = await params;
