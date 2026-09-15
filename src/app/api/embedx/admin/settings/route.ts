@@ -26,12 +26,6 @@ export async function POST(request: NextRequest) {
   if (!isAuthorized(request)) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
   }
-  if (!isSuperAdmin(request)) {
-    return NextResponse.json(
-      { success: false, error: "Read-only access. Super admin required to change settings." },
-      { status: 403 }
-    );
-  }
 
   try {
     const body = await request.json();

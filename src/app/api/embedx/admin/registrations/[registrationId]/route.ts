@@ -67,3 +67,47 @@ export async function DELETE(
     return NextResponse.json({ success: false, error: "Failed to delete registration." }, { status: 500 });
   }
 }
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ registrationId: string }> }
+) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json({ success: false, error: "Unauthorized access." }, { status: 401 });
+  }
+
+  try {
+    const { registrationId } = await params;
+    const body = await request.json();
+    const { teamName, memberCount } = body;
+
+    const { updateRegistrationDetails, getRegistrationByRegistrationId } = await import("@/lib/db");
+    
+    const oldReg = await getRegistrationByRegistrationId(registrationId);
+    if (!oldReg) {
+      return NextResponse.json({ success: false, error: "Registration not found." }, { status: 404 });
+    }
+
+    const diffs = [];
+    if (teamName !== undefined && oldReg.teamName !== teamName) diffs.push(`Team Name ("${oldReg.teamName}" -> "${teamName}")`);
+    if (memberCount !== undefined && oldReg.memberCount !== memberCount) diffs.push(`Member Count (${oldReg.memberCount} -> ${memberCount})`);
+    
+    if (diffs.length === 0) {
+       return NextResponse.json({ success: true, data: oldReg });
+    }
+
+    const updated = await updateRegistrationDetails(
+      registrationId,
+      { 
+        ...(teamName !== undefined && { teamName }), 
+        ...(memberCount !== undefined && { memberCount }) 
+      },
+      { editedBy: "ADMIN", changes: `Admin updated: ${diffs.join(", ")}` }
+    );
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (err: any) {
+    console.error("Admin edit registration error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}

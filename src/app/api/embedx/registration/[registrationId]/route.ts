@@ -59,8 +59,8 @@ export async function GET(
       leaderRollNumber: registration.leaderRollNumber,
       leaderBranch: registration.leaderBranch,
       leaderYear: registration.leaderYear,
-      // Partially mask mobile and email for privacy
-      mobile: registration.mobile.slice(0, 3) + "****" + registration.mobile.slice(-3),
+      // Return raw mobile so the user can edit it without overwriting with asterisks
+      mobile: registration.mobile,
       email: registration.email,
       memberCount: registration.memberCount,
       members: registration.members,
@@ -71,9 +71,13 @@ export async function GET(
       createdAt: registration.createdAt,
     };
 
-    return NextResponse.json({ success: true, data: safe }, { status: 200 });
+    const { SystemSettings } = await import("@/lib/db");
+    const setting = await SystemSettings.findOne({ key: "allowParticipantEdits" });
+    const allowParticipantEdits = setting ? setting.value !== false : true;
+
+    return NextResponse.json({ success: true, data: safe, allowParticipantEdits }, { status: 200 });
   } catch (err) {
-    console.error("Registration fetch error:", err);
+    console.error("Dashboard error:", err);
     return NextResponse.json(
       {
         success: false,
@@ -81,5 +85,78 @@ export async function GET(
       },
       { status: 500 }
     );
+  }
+}
+
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ registrationId: string }> }
+) {
+  try {
+    const { registrationId } = await params;
+
+    if (!registrationId || typeof registrationId !== "string") {
+      return NextResponse.json({ success: false, error: "Invalid registration ID." }, { status: 400 });
+    }
+
+    const authenticatedRegistration = await getAuthenticatedRegistration();
+
+    if (!authenticatedRegistration || authenticatedRegistration.registrationId !== registrationId.toUpperCase()) {
+      return NextResponse.json({ success: false, error: "Authentication required." }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { leaderName, leaderRollNumber, leaderBranch, leaderYear, mobile, email, members } = body;
+
+    // Optional: add zod validation here if needed, or rely on client-side + mongoose validation
+    const { updateRegistrationDetails, getRegistrationByRegistrationId, SystemSettings } = await import("@/lib/db");
+
+    const setting = await SystemSettings.findOne({ key: "allowParticipantEdits" });
+    if (setting && setting.value === false) {
+      return NextResponse.json({ success: false, error: "Edits are currently locked by the administrator." }, { status: 403 });
+    }
+    
+    const oldReg = await getRegistrationByRegistrationId(registrationId.toUpperCase());
+    let changesText = "Updated details.";
+    if (oldReg) {
+      const diffs = [];
+      if (oldReg.leaderName !== leaderName) diffs.push(`Leader Name ("${oldReg.leaderName}" -> "${leaderName}")`);
+      if (oldReg.leaderRollNumber !== leaderRollNumber) diffs.push(`Leader Roll ("${oldReg.leaderRollNumber}" -> "${leaderRollNumber}")`);
+      if (oldReg.leaderBranch !== leaderBranch) diffs.push(`Leader Branch ("${oldReg.leaderBranch}" -> "${leaderBranch}")`);
+      if (oldReg.leaderYear !== leaderYear) diffs.push(`Leader Year ("${oldReg.leaderYear}" -> "${leaderYear}")`);
+      if (oldReg.mobile !== mobile) diffs.push(`Mobile ("${oldReg.mobile}" -> "${mobile}")`);
+      if (oldReg.email !== email) diffs.push(`Email ("${oldReg.email}" -> "${email}")`);
+      
+      if (JSON.stringify(oldReg.members) !== JSON.stringify(members)) {
+        diffs.push(`Team Members updated`);
+      }
+      
+      if (diffs.length > 0) {
+        changesText = `Updated: ${diffs.join(", ")}`;
+      }
+    }
+
+    const updated = await updateRegistrationDetails(
+      registrationId.toUpperCase(),
+      {
+        leaderName,
+        leaderRollNumber,
+        leaderBranch,
+        leaderYear,
+        mobile,
+        email,
+        members,
+      },
+      { editedBy: "TEAM (USER)", changes: changesText }
+    );
+
+    if (!updated) {
+      return NextResponse.json({ success: false, error: "Registration not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: updated }, { status: 200 });
+  } catch (err: any) {
+    console.error("Registration update error:", err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }

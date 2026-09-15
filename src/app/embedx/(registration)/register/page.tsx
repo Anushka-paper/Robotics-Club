@@ -49,16 +49,18 @@ function StepIndicator({ currentStep, skipMembers }: { currentStep: number; skip
   const steps = skipMembers
     ? [
       { n: 1, label: "Team Details" },
-      { n: 3, label: "Payment" },
+      { n: 3, label: "Review" },
+      { n: 4, label: "Payment" },
     ]
     : [
       { n: 1, label: "Team Details" },
       { n: 2, label: "Members" },
-      { n: 3, label: "Payment" },
+      { n: 3, label: "Review" },
+      { n: 4, label: "Payment" },
     ];
 
   const displayIndex = skipMembers
-    ? [1, 3].indexOf(currentStep)
+    ? [1, 3, 4].indexOf(currentStep)
     : currentStep - 1;
 
   return (
@@ -77,10 +79,7 @@ function StepIndicator({ currentStep, skipMembers }: { currentStep: number; skip
           const stepDisplay = idx + 1;
           let state: "active" | "complete" | "inactive";
           if (step.n === currentStep) state = "active";
-          else if (
-            (skipMembers && currentStep === 3 && step.n === 1) ||
-            (!skipMembers && step.n < currentStep)
-          )
+          else if (step.n < currentStep)
             state = "complete";
           else state = "inactive";
 
@@ -133,9 +132,7 @@ function StepIndicator({ currentStep, skipMembers }: { currentStep: number; skip
                     width: "40px",
                     height: "1px",
                     background:
-                      (skipMembers
-                        ? currentStep === 3 && step.n === 1
-                        : step.n < currentStep)
+                      step.n < currentStep
                         ? "linear-gradient(to right, rgba(0,200,215,0.5), rgba(0,200,215,0.15))"
                         : "rgba(255,255,255,0.06)",
                     flexShrink: 0,
@@ -372,7 +369,7 @@ function Step1({
 
       {team.memberCount === 1 && (
         <div style={{ padding: "0.75rem 1rem", background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.15)", borderRadius: "0.5rem", fontSize: "0.8125rem", color: "#7dd3fc" }}>
-          ℹ Solo team — payment step follows directly.
+          ℹ Solo team — review step follows directly.
         </div>
       )}
 
@@ -490,7 +487,95 @@ function Step2({
           ← Back
         </button>
         <button className="btn-primary" onClick={handleMemberContinue} style={{ minWidth: "180px" }}>
-          Continue to Payment →
+          Continue to Review →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+interface StepChecklistProps {
+  team: TeamData;
+  members: MemberData[];
+  skipMembers: boolean;
+  additionalMemberCount: number;
+  onBack: () => void;
+  onContinue: () => void;
+}
+
+function StepChecklist({ team, members, skipMembers, additionalMemberCount, onBack, onContinue }: StepChecklistProps) {
+  const [verified, setVerified] = useState(false);
+
+  return (
+    <div className="animate-step-in" style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+      <div>
+        <h2 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "1.375rem", fontWeight: 700, color: "#f0f6ff", marginBottom: "0.25rem" }}>
+          Review Team Details
+        </h2>
+        <p style={{ color: "#64748b", fontSize: "0.875rem" }}>
+          Please review your details carefully before proceeding to payment.
+        </p>
+      </div>
+
+      <hr className="cyan-divider" style={{ margin: "0" }} />
+
+      <div style={{ padding: "1.25rem", background: "rgba(15, 23, 42, 0.4)", borderRadius: "0.75rem", border: "1px solid rgba(0, 240, 255, 0.15)" }}>
+        <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#38bdf8", marginBottom: "0.75rem" }}>Team: {team.teamName}</h3>
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+          <p style={{ fontSize: "0.875rem", color: "#cbd5e1", margin: 0 }}><strong>Leader:</strong> {team.leaderName} (Roll: {team.leaderRollNumber || "N/A"})</p>
+          <p style={{ fontSize: "0.875rem", color: "#cbd5e1", margin: 0 }}><strong>Branch:</strong> {team.leaderBranch} · <strong>Year:</strong> {team.leaderYear}</p>
+          <p style={{ fontSize: "0.875rem", color: "#cbd5e1", margin: 0 }}><strong>Contact:</strong> {team.email} | {team.mobile}</p>
+        </div>
+        
+        {!skipMembers && additionalMemberCount > 0 && (
+          <div style={{ marginTop: "1.25rem" }}>
+            <h4 style={{ fontSize: "0.875rem", fontWeight: 600, color: "#94a3b8", marginBottom: "0.5rem", textTransform: "uppercase", letterSpacing: "1px" }}>Additional Members:</h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {members.slice(0, additionalMemberCount).map((m, idx) => (
+                <div key={idx} style={{ padding: "0.75rem", background: "rgba(255,255,255,0.02)", borderRadius: "0.5rem" }}>
+                  <p style={{ fontSize: "0.875rem", color: "#e2e8f0", margin: "0 0 0.2rem 0", fontWeight: 600 }}>{m.name}</p>
+                  <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: 0 }}>Roll: {m.rollNumber || "N/A"} · Branch: {m.branch} · Year: {m.year}</p>
+                  <p style={{ fontSize: "0.8rem", color: "#94a3b8", margin: "0.1rem 0 0 0" }}>{m.email}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer", userSelect: "none", marginTop: "0.5rem" }}>
+        <input
+          type="checkbox"
+          checked={verified}
+          onChange={(e) => setVerified(e.target.checked)}
+          style={{
+            width: "1.125rem",
+            height: "1.125rem",
+            accentColor: "#00f0ff",
+            cursor: "pointer"
+          }}
+        />
+        <span style={{ fontSize: "0.875rem", color: "#e2e8f0" }}>
+          I verify that all the above details are correct.
+        </span>
+      </label>
+
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", marginTop: "0.5rem" }}>
+        <button className="btn-secondary" onClick={onBack}>
+          ← Edit Details
+        </button>
+        <button 
+          className="btn-primary" 
+          onClick={onContinue} 
+          disabled={!verified}
+          style={{ 
+            minWidth: "180px",
+            opacity: verified ? 1 : 0.5,
+            cursor: verified ? "pointer" : "not-allowed",
+          }}
+        >
+          Confirm & Pay →
         </button>
       </div>
     </div>
@@ -1049,6 +1134,16 @@ export default function RegisterPage() {
             />
           )}
           {currentStep === 3 && (
+            <StepChecklist
+              team={team}
+              members={members}
+              skipMembers={skipMembers}
+              additionalMemberCount={additionalMemberCount}
+              onBack={() => { setCurrentStep(skipMembers ? 1 : 2); setErrors({}); }}
+              onContinue={() => { setCurrentStep(4); setErrors({}); }}
+            />
+          )}
+          {currentStep === 4 && (
             <Step3
               utr={utr}
               errors={errors}
@@ -1069,7 +1164,7 @@ export default function RegisterPage() {
               handleDragLeave={() => setDragOver(false)}
               handleFileInputChange={handleFileInputChange}
               onBack={() => {
-                setCurrentStep(skipMembers ? 1 : 2);
+                setCurrentStep(3);
                 setErrors({});
               }}
               handleSubmit={handleSubmit}

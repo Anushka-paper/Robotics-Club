@@ -111,6 +111,38 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+function EditRow({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (val: string) => void; type?: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        padding: "0.625rem 0",
+        borderBottom: "1px solid rgba(0, 240, 255, 0.06)",
+        fontSize: "0.875rem",
+      }}
+    >
+      <span style={{ color: "#64748b", minWidth: "140px", flexShrink: 0 }}>{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          flex: 1,
+          background: "rgba(15, 23, 42, 0.6)",
+          border: "1px solid rgba(0, 240, 255, 0.3)",
+          borderRadius: "0.375rem",
+          color: "#e2e8f0",
+          padding: "0.375rem 0.75rem",
+          fontSize: "0.875rem",
+          outline: "none"
+        }}
+      />
+    </div>
+  );
+}
+
 function ScreenshotModal({ url, onClose }: { url: string; onClose: () => void }) {
   return (
     <div
@@ -175,6 +207,10 @@ export default function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [allowEdits, setAllowEdits] = useState(true);
 
   const handleLogout = async () => {
     try {
@@ -183,6 +219,43 @@ export default function DashboardClient() {
       // Ignore logout request failure and redirect anyway for a smooth UX.
     } finally {
       window.location.href = "/embedx/login";
+    }
+  };
+
+  const startEditing = () => {
+    if (!data) return;
+    setEditData({
+      leaderName: data.leaderName,
+      leaderRollNumber: data.leaderRollNumber,
+      leaderBranch: data.leaderBranch,
+      leaderYear: data.leaderYear,
+      mobile: data.mobile,
+      email: data.email,
+      members: JSON.parse(JSON.stringify(data.members || []))
+    });
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!data || !editData) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/embedx/registration/${data.registrationId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editData),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData(json.data);
+        setIsEditing(false);
+      } else {
+        alert(json.error || "Failed to update details.");
+      }
+    } catch (err) {
+      alert("Failed to update details.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -198,6 +271,9 @@ export default function DashboardClient() {
           setError(json.error || "Registration not found.");
         } else {
           setData(json.data);
+          if (json.allowParticipantEdits !== undefined) {
+            setAllowEdits(json.allowParticipantEdits);
+          }
         }
       } catch {
         setError("Failed to load registration. Please refresh the page.");
@@ -363,17 +439,49 @@ export default function DashboardClient() {
           </div>
         )}
 
-        <div className="glass-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.25rem" }}>
-          <h3 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#38bdf8", marginBottom: "0.5rem" }}>
-            Team Details
-          </h3>
+        <div className="glass-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.25rem", position: "relative" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+            <h3 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#38bdf8", margin: 0 }}>
+              Team Details
+            </h3>
+            {allowEdits && (
+              !isEditing ? (
+                <button onClick={startEditing} style={{ background: "none", border: "1px solid rgba(56,189,248,0.4)", borderRadius: "0.25rem", color: "#38bdf8", padding: "0.25rem 0.5rem", fontSize: "0.75rem", cursor: "pointer", transition: "all 0.2s" }} className="hover:bg-sky-500/10">
+                  Edit Details
+                </button>
+              ) : (
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button onClick={() => setIsEditing(false)} disabled={saving} style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "0.25rem", color: "#e2e8f0", padding: "0.25rem 0.5rem", fontSize: "0.75rem", cursor: "pointer" }}>
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} disabled={saving} style={{ background: "rgba(56,189,248,0.2)", border: "1px solid rgba(56,189,248,0.5)", borderRadius: "0.25rem", color: "#38bdf8", padding: "0.25rem 0.5rem", fontSize: "0.75rem", cursor: "pointer" }}>
+                    {saving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )
+            )}
+          </div>
           <InfoRow label="Team Name" value={data.teamName} />
-          <InfoRow label="Leader Name" value={data.leaderName} />
-          <InfoRow label="Leader Roll Number" value={data.leaderRollNumber || "—"} />
-          <InfoRow label="Branch" value={data.leaderBranch} />
-          <InfoRow label="Year" value={`Year ${data.leaderYear}`} />
-          <InfoRow label="Mobile" value={data.mobile} />
-          <InfoRow label="Email" value={data.email} />
+          
+          {isEditing ? (
+            <>
+              <EditRow label="Leader Name" value={editData.leaderName} onChange={val => setEditData({ ...editData, leaderName: val })} />
+              <EditRow label="Leader Roll Number" value={editData.leaderRollNumber} onChange={val => setEditData({ ...editData, leaderRollNumber: val })} />
+              <EditRow label="Branch" value={editData.leaderBranch} onChange={val => setEditData({ ...editData, leaderBranch: val })} />
+              <EditRow label="Year" value={editData.leaderYear} onChange={val => setEditData({ ...editData, leaderYear: val })} />
+              <EditRow label="Mobile" value={editData.mobile} onChange={val => setEditData({ ...editData, mobile: val })} />
+              <EditRow label="Email" value={editData.email} onChange={val => setEditData({ ...editData, email: val })} type="email" />
+            </>
+          ) : (
+            <>
+              <InfoRow label="Leader Name" value={data.leaderName} />
+              <InfoRow label="Leader Roll Number" value={data.leaderRollNumber || "—"} />
+              <InfoRow label="Branch" value={data.leaderBranch} />
+              <InfoRow label="Year" value={`Year ${data.leaderYear}`} />
+              <InfoRow label="Mobile" value={data.mobile} />
+              <InfoRow label="Email" value={data.email} />
+            </>
+          )}
           <InfoRow label="Total Members" value={`${data.memberCount} member${data.memberCount > 1 ? "s" : ""}`} />
         </div>
 
@@ -382,16 +490,28 @@ export default function DashboardClient() {
             <h3 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#38bdf8", marginBottom: "0.75rem" }}>
               Team Members
             </h3>
-            {data.members.map((member, idx) => (
+            {(isEditing ? editData.members : data.members).map((member: any, idx: number) => (
               <div key={idx} style={{ marginBottom: idx < data.members.length - 1 ? "1rem" : 0 }}>
                 <div style={{ fontSize: "0.6875rem", fontWeight: 600, letterSpacing: "1.5px", textTransform: "uppercase", color: "#475569", marginBottom: "0.35rem" }}>
                   Member {idx + 1}
                 </div>
-                <InfoRow label="Name" value={member.name} />
-                <InfoRow label="Roll Number" value={member.rollNumber || "—"} />
-                <InfoRow label="Branch" value={member.branch} />
-                <InfoRow label="Year" value={`Year ${member.year}`} />
-                <InfoRow label="Email" value={member.email} />
+                {isEditing ? (
+                  <>
+                    <EditRow label="Name" value={member.name} onChange={val => { const newM = [...editData.members]; newM[idx].name = val; setEditData({ ...editData, members: newM }) }} />
+                    <EditRow label="Roll Number" value={member.rollNumber} onChange={val => { const newM = [...editData.members]; newM[idx].rollNumber = val; setEditData({ ...editData, members: newM }) }} />
+                    <EditRow label="Branch" value={member.branch} onChange={val => { const newM = [...editData.members]; newM[idx].branch = val; setEditData({ ...editData, members: newM }) }} />
+                    <EditRow label="Year" value={member.year} onChange={val => { const newM = [...editData.members]; newM[idx].year = val; setEditData({ ...editData, members: newM }) }} />
+                    <EditRow label="Email" value={member.email} onChange={val => { const newM = [...editData.members]; newM[idx].email = val; setEditData({ ...editData, members: newM }) }} type="email" />
+                  </>
+                ) : (
+                  <>
+                    <InfoRow label="Name" value={member.name} />
+                    <InfoRow label="Roll Number" value={member.rollNumber || "—"} />
+                    <InfoRow label="Branch" value={member.branch} />
+                    <InfoRow label="Year" value={`Year ${member.year}`} />
+                    <InfoRow label="Email" value={member.email} />
+                  </>
+                )}
               </div>
             ))}
           </div>
