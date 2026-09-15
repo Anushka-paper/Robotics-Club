@@ -466,7 +466,7 @@ export default function AdminDashboardPage() {
                         </Link>
                         <div style={{ fontSize: "0.8rem", color: "#cbd5e1", marginTop: "0.2rem", display: "flex", alignItems: "center", gap: "0.3rem" }}>
                           <Crown size={14} style={{ color: "#fbbf24" }} />
-                          <span>{item.leaderName} ({item.leaderBranch} · Yr {item.leaderYear})</span>
+                          <span>{item.leaderName} ({item.leaderBranch} · Yr {item.leaderYear} · Roll: {item.leaderRollNumber || "N/A"})</span>
                         </div>
                       </td>
 
