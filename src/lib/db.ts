@@ -225,6 +225,7 @@ export async function createRegistration(
     registrationId: data.registrationId,
     teamName: data.teamName,
     leaderName: data.leaderName,
+    leaderRollNumber: data.leaderRollNumber || "",
     leaderBranch: data.leaderBranch,
     leaderYear: data.leaderYear,
     mobile: data.mobile,
