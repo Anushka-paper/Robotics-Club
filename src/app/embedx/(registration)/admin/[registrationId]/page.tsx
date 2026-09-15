@@ -22,6 +22,7 @@ interface RegistrationDetail {
   paymentScreenshotUrl: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  editLogs?: { timestamp: string; editedBy: string; changes: string }[];
   createdAt: string;
 }
 
@@ -93,6 +94,38 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+function EditRow({ label, value, onChange, type = "text" }: { label: string; value: string | number; onChange: (val: string) => void; type?: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        padding: "0.625rem 0",
+        borderBottom: "1px solid rgba(0, 240, 255, 0.06)",
+        fontSize: "0.875rem",
+      }}
+    >
+      <span style={{ color: "#64748b", minWidth: "140px", flexShrink: 0 }}>{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          flex: 1,
+          background: "rgba(15, 23, 42, 0.6)",
+          border: "1px solid rgba(0, 240, 255, 0.3)",
+          borderRadius: "0.375rem",
+          color: "#e2e8f0",
+          padding: "0.375rem 0.75rem",
+          fontSize: "0.875rem",
+          outline: "none"
+        }}
+      />
+    </div>
+  );
+}
+
 export default function AdminRegistrationDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -108,6 +141,43 @@ export default function AdminRegistrationDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<{ teamName: string; memberCount: number }>({ teamName: "", memberCount: 1 });
+  const [isSaving, setIsSaving] = useState(false);
+
+  const startEditing = () => {
+    if (!data) return;
+    setEditData({ teamName: data.teamName, memberCount: data.memberCount });
+    setIsEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!data) return;
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/embedx/admin/registrations/${registrationId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": passkey,
+        },
+        body: JSON.stringify(editData),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setData(json.data);
+        setIsEditing(false);
+      } else {
+        alert(json.error || "Failed to save edits.");
+      }
+    } catch {
+      alert("Failed to save edits.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   useEffect(() => {
     const passkey = localStorage.getItem("embedx_admin_passkey");
@@ -216,17 +286,41 @@ export default function AdminRegistrationDetailPage() {
           <span>Back to Admin</span>
         </Link>
 
-        <div className="glass-card" style={{ padding: "1.5rem", marginBottom: "1.25rem" }}>
+        <div className="glass-card" style={{ padding: "1.5rem", marginBottom: "1.25rem", position: "relative" }}>
+            <div style={{ position: "absolute", top: "1.5rem", right: "1.5rem" }}>
+              {!isEditing ? (
+                <button onClick={startEditing} style={{ background: "none", border: "1px solid rgba(56,189,248,0.4)", borderRadius: "0.25rem", color: "#38bdf8", padding: "0.25rem 0.6rem", fontSize: "0.75rem", cursor: "pointer", transition: "all 0.2s" }} className="hover:bg-sky-500/10">
+                  Edit Details
+                </button>
+              ) : (
+                <div style={{ display: "flex", gap: "0.5rem" }}>
+                  <button onClick={() => setIsEditing(false)} disabled={isSaving} style={{ background: "none", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "0.25rem", color: "#e2e8f0", padding: "0.25rem 0.6rem", fontSize: "0.75rem", cursor: "pointer" }}>
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} disabled={isSaving} style={{ background: "rgba(56,189,248,0.2)", border: "1px solid rgba(56,189,248,0.5)", borderRadius: "0.25rem", color: "#38bdf8", padding: "0.25rem 0.6rem", fontSize: "0.75rem", cursor: "pointer" }}>
+                    {isSaving ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              )}
+            </div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
-            <div>
+            <div style={{ width: "100%", maxWidth: "400px" }}>
               <div style={{ fontFamily: "monospace", fontSize: "1.5rem", fontWeight: 800, color: "#00f0ff", letterSpacing: "0.05em" }}>
                 {data.registrationId}
               </div>
-              <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "#f0f6ff", marginTop: "0.25rem" }}>
-                {data.teamName}
-              </div>
+              
+              {!isEditing ? (
+                <div style={{ fontSize: "1.375rem", fontWeight: 700, color: "#f0f6ff", marginTop: "0.25rem" }}>
+                  {data.teamName}
+                </div>
+              ) : (
+                <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <EditRow label="Team Name" value={editData.teamName} onChange={val => setEditData({ ...editData, teamName: val })} />
+                  <EditRow label="Member Count" value={editData.memberCount} onChange={val => setEditData({ ...editData, memberCount: parseInt(val) || 1 })} type="number" />
+                </div>
+              )}
             </div>
-            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginTop: isEditing ? "1rem" : 0 }}>
               <StatusBadge status={data.registrationStatus} />
               <PaymentBadge status={data.paymentStatus} />
             </div>
@@ -304,6 +398,32 @@ export default function AdminRegistrationDetailPage() {
               alt="Payment receipt"
               style={{ maxWidth: "100%", borderRadius: "0.5rem", display: "block", margin: "0 auto" }}
             />
+          </div>
+        )}
+
+        {/* ── Edit Logs ── */}
+        {data.editLogs && data.editLogs.length > 0 && (
+          <div className="glass-card" style={{ padding: "1.25rem 1.5rem", marginBottom: "1.25rem" }}>
+            <h3 style={{ fontFamily: "var(--font-space-grotesk)", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase", color: "#38bdf8", marginBottom: "1rem" }}>
+              Edit History
+            </h3>
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+              {data.editLogs.slice().reverse().map((log, idx) => (
+                <div key={idx} style={{ padding: "0.75rem", background: "rgba(15, 23, 42, 0.4)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.5rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                    <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#e2e8f0" }}>
+                      Edited by: {log.editedBy}
+                    </span>
+                    <span style={{ fontSize: "0.65rem", color: "#64748b" }}>
+                      {new Date(log.timestamp).toLocaleString("en-IN")}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: "0.8125rem", color: "#94a3b8" }}>
+                    {log.changes}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

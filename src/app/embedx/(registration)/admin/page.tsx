@@ -30,6 +30,7 @@ interface RegistrationItem {
   registrationId: string;
   teamName: string;
   leaderName: string;
+  leaderRollNumber: string;
   leaderBranch: string;
   leaderYear: string;
   mobile: string;
@@ -41,6 +42,7 @@ interface RegistrationItem {
   paymentScreenshotPath: string;
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
+  editLogs?: { timestamp: string; editedBy: string; changes: string }[];
   createdAt: string;
   updatedAt: string;
 }
@@ -70,6 +72,9 @@ export default function AdminDashboardPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<{ url: string; team: string; utr: string } | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [copiedUtr, setCopiedUtr] = useState<string | null>(null);
+  const [showActivityLogs, setShowActivityLogs] = useState<boolean>(false);
+  const [allowParticipantEdits, setAllowParticipantEdits] = useState<boolean>(true);
+  const [isTogglingEdits, setIsTogglingEdits] = useState<boolean>(false);
 
   // Check saved passkey on mount
   useEffect(() => {
@@ -79,6 +84,43 @@ export default function AdminDashboardPage() {
       setIsSuperAdmin(localStorage.getItem("embedx_admin_role") === "super");
     }
   }, []);
+
+  const fetchSettings = useCallback(async () => {
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    try {
+      const res = await fetch("/api/embedx/admin/settings", {
+        headers: { "x-admin-password": passkey }
+      });
+      const data = await res.json();
+      if (data.success && data.settings) {
+        setAllowParticipantEdits(data.settings.allowParticipantEdits !== false); // default true if undefined
+      }
+    } catch (err) {
+      console.error("Failed to fetch settings", err);
+    }
+  }, []);
+
+  const toggleEdits = async () => {
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    setIsTogglingEdits(true);
+    try {
+      const res = await fetch("/api/embedx/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": passkey },
+        body: JSON.stringify({ key: "allowParticipantEdits", value: !allowParticipantEdits })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setAllowParticipantEdits(!allowParticipantEdits);
+      } else {
+        alert(data.error || "Failed to update setting. Are you a Super Admin?");
+      }
+    } catch (err) {
+      alert("Failed to update setting.");
+    } finally {
+      setIsTogglingEdits(false);
+    }
+  };
 
   // Fetch registrations
   const fetchRegistrations = useCallback(async () => {
@@ -122,8 +164,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     if (isAuthenticated) {
       fetchRegistrations();
+      fetchSettings();
     }
-  }, [isAuthenticated, fetchRegistrations]);
+  }, [isAuthenticated, fetchRegistrations, fetchSettings]);
 
   // Handle Admin Login
   const handleLogin = async (e: React.FormEvent) => {
@@ -316,6 +359,23 @@ export default function AdminDashboardPage() {
               <Trophy size={14} />
               <span>Leaderboard</span>
             </Link>
+            <button
+              onClick={() => setShowActivityLogs(true)}
+              style={{ background: "rgba(168,85,247,0.15)", border: "1px solid rgba(168,85,247,0.4)", color: "#c084fc", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <Clock size={14} />
+              <span>Activity Logs</span>
+            </button>
+            <button
+              onClick={toggleEdits}
+              disabled={isTogglingEdits}
+              style={{ background: allowParticipantEdits ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.1)", border: `1px solid ${allowParticipantEdits ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.3)"}`, color: allowParticipantEdits ? "#4ade80" : "#f87171", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <div style={{ width: "24px", height: "14px", background: allowParticipantEdits ? "#4ade80" : "rgba(255,255,255,0.2)", borderRadius: "12px", position: "relative", transition: "all 0.3s" }}>
+                <div style={{ width: "10px", height: "10px", background: "#fff", borderRadius: "50%", position: "absolute", top: "2px", left: allowParticipantEdits ? "12px" : "2px", transition: "all 0.3s" }} />
+              </div>
+              <span>{allowParticipantEdits ? "Edits Open" : "Edits Locked"}</span>
+            </button>
             <button
               onClick={fetchRegistrations}
               style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "#e2e8f0", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 500, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
@@ -694,6 +754,66 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Global Activity Logs Modal */}
+      {showActivityLogs && (
+        <div
+          onClick={() => setShowActivityLogs(false)}
+          style={{
+            position: "fixed",
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: "rgba(3,7,18,0.85)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem", zIndex: 9999,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="glass-card"
+            style={{ maxWidth: "700px", width: "100%", maxHeight: "80vh", display: "flex", flexDirection: "column", padding: "1.5rem", background: "#0b1222", border: "1px solid rgba(168,85,247,0.4)" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+              <h3 style={{ margin: 0, color: "#f8fafc", fontSize: "1.1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                <Clock size={18} style={{ color: "#c084fc" }} /> Global Activity Logs
+              </h3>
+              <button onClick={() => setShowActivityLogs(false)} style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer" }}>
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: "0.75rem", paddingRight: "0.5rem" }}>
+              {(() => {
+                const allLogs = registrations.flatMap(r => 
+                  (r.editLogs || []).map(log => ({ ...log, teamName: r.teamName, regId: r.registrationId }))
+                ).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                
+                if (allLogs.length === 0) {
+                  return <div style={{ color: "#64748b", textAlign: "center", padding: "2rem" }}>No recent activity to display.</div>;
+                }
+                
+                return allLogs.map((log, idx) => (
+                  <div key={idx} style={{ padding: "0.75rem", background: "rgba(15, 23, 42, 0.4)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "0.5rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                      <span style={{ fontSize: "0.85rem", fontWeight: 700, color: "#e2e8f0" }}>
+                        {log.teamName} <span style={{ color: "#64748b", fontWeight: 400 }}>({log.regId})</span> &mdash; Edited by: <span style={{ color: log.editedBy === "ADMIN" ? "#fbbf24" : "#38bdf8" }}>{log.editedBy}</span>
+                      </span>
+                      <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                        {new Date(log.timestamp).toLocaleString("en-IN", {
+                          weekday: 'short', month: 'short', day: 'numeric',
+                          hour: '2-digit', minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: "0.85rem", color: "#94a3b8", marginTop: "0.4rem" }}>
+                      {log.changes}
+                    </div>
+                  </div>
+                ));
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

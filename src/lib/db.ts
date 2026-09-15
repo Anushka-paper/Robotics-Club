@@ -9,6 +9,12 @@ export interface MemberItem {
   email: string;
 }
 
+export interface EditLog {
+  timestamp: string;
+  editedBy: string;
+  changes: string;
+}
+
 export interface RegistrationRecord {
   id: string;
   registrationId: string;
@@ -27,6 +33,7 @@ export interface RegistrationRecord {
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
   score: number;
+  editLogs?: EditLog[];
   createdAt: string;
   updatedAt: string;
 }
@@ -48,6 +55,7 @@ export interface IRegistrationDocument extends Document {
   paymentStatus: "PENDING" | "VERIFIED" | "REJECTED";
   registrationStatus: "PENDING" | "CONFIRMED" | "REJECTED";
   score: number;
+  editLogs: { timestamp: Date; editedBy: string; changes: string }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -91,6 +99,16 @@ const RegistrationSchema = new Schema<IRegistrationDocument>(
     score: {
       type: Number,
       default: 0,
+    },
+    editLogs: {
+      type: [
+        {
+          timestamp: { type: Date, default: Date.now },
+          editedBy: { type: String },
+          changes: { type: String },
+        },
+      ],
+      default: [],
     },
   },
   {
@@ -205,6 +223,11 @@ function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | nu
     paymentStatus: doc.paymentStatus,
     registrationStatus: doc.registrationStatus,
     score: doc.score ?? 0,
+    editLogs: doc.editLogs ? doc.editLogs.map((log: any) => ({
+      timestamp: log.timestamp ? new Date(log.timestamp).toISOString() : new Date().toISOString(),
+      editedBy: log.editedBy,
+      changes: log.changes,
+    })) : [],
     createdAt: doc.createdAt ? doc.createdAt.toISOString() : new Date().toISOString(),
     updatedAt: doc.updatedAt ? doc.updatedAt.toISOString() : new Date().toISOString(),
   };
@@ -292,6 +315,30 @@ export async function updateRegistrationStatus(
   const updated = await RegistrationModel.findOneAndUpdate(
     { registrationId: registrationId.trim().toUpperCase() },
     { paymentStatus, registrationStatus },
+    { new: true }
+  ).exec();
+  return docToRecord(updated);
+}
+
+export async function updateRegistrationDetails(
+  registrationId: string,
+  updates: Partial<RegistrationRecord>,
+  logEntry?: { editedBy: string; changes: string }
+): Promise<RegistrationRecord | null> {
+  await connectToDatabase();
+  const updateCmd: any = { $set: updates };
+  if (logEntry) {
+    updateCmd.$push = {
+      editLogs: {
+        timestamp: new Date(),
+        editedBy: logEntry.editedBy,
+        changes: logEntry.changes,
+      },
+    };
+  }
+  const updated = await RegistrationModel.findOneAndUpdate(
+    { registrationId: registrationId.trim().toUpperCase() },
+    updateCmd,
     { new: true }
   ).exec();
   return docToRecord(updated);
