@@ -7,6 +7,7 @@ import { EncryptedText } from "@/components/ui/EncryptedTextEmbedx";
 import ShaderWaves from "@/components/ui/ShaderWaves";
 import { Timeline } from "@/components/ui/timeline";
 import SleekLineCursor from "@/components/SleekLineCursor";
+import Banner1 from "@/components/ui/banner-1";
 
 export default function EmbedxPage() {
   const router = useRouter();
@@ -62,6 +63,11 @@ export default function EmbedxPage() {
 
   return (
     <div className="min-h-screen w-full bg-[#050810] text-white relative flex flex-col font-['Inter']">
+
+      {/* Internship announcement */}
+      <div className="relative z-20">
+        <Banner1 />
+      </div>
 
       {/* WebGL Animated Waves Background (Base) */}
       <ShaderWaves />
