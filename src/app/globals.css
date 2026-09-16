@@ -1,5 +1,23 @@
 @import "tailwindcss";
 
+/* shadcn/ui theme tokens (Tailwind v4 @theme so bg-primary, text-accent-foreground,
+   ring-ring etc. resolve) - values kept close to the site's dark cyan palette above. */
+@theme {
+  --color-background: #030b18;
+  --color-foreground: #f0f6ff;
+  --color-primary: #00c8d7;
+  --color-primary-foreground: #030712;
+  --color-secondary: rgba(255, 255, 255, 0.06);
+  --color-secondary-foreground: #f0f6ff;
+  --color-accent: rgba(0, 240, 255, 0.12);
+  --color-accent-foreground: #f0f6ff;
+  --color-destructive: #ef4444;
+  --color-destructive-foreground: #fef2f2;
+  --color-border: rgba(0, 240, 255, 0.12);
+  --color-input: rgba(0, 240, 255, 0.15);
+  --color-ring: #00f0ff;
+}
+
 @layer base {
   :root {
     --bg-primary: #030b18;
