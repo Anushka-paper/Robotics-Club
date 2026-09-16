@@ -1,6 +1,5 @@
 import { Suspense, useEffect, type RefObject } from "react";
 import { Canvas } from "@react-three/fiber";
-import { Environment } from "@react-three/drei";
 import Model from "./Model";
 
 type SceneProps = {
@@ -26,9 +25,10 @@ export default function Scene({ scroll, eventSource, small, onReady }: SceneProp
       style={{ position: "fixed", inset: 0 }}
     >
       <ambientLight intensity={Math.PI} />
+      <directionalLight position={[5, 10, 5]} intensity={1.5} />
+      <directionalLight position={[-5, -10, -5]} intensity={0.5} />
       <Suspense fallback={null}>
         <Model scroll={scroll} shadowMapSize={small ? 512 : 1024} />
-        <Environment preset="city" />
         <Ready onReady={onReady} />
       </Suspense>
     </Canvas>
