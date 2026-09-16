@@ -39,7 +39,8 @@ export const EMBEDX_CONFIG = {
     "CE",
     "CHE",
     "BBA",
-    "B.Pharm."
+    "B.Pharm.",
+    "Other"
   ] as const,
 
   years: ["I", "II", "III", "IV"] as const,
