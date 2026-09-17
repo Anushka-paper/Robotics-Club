@@ -223,6 +223,35 @@ export default function EmbedxPage() {
                   <p>
                     The Robotics Club proposes to organize a three-phase, hands-on embedded systems event designed to take participants from a blank problem statement to a working hardware prototype. Unlike a typical one-day hackathon, this event is structured so that participants first receive real components and a challenge, are then trained on the exact hardware they are expected to use, and finally present their completed builds to the faculty panel. This approach ensures that even participants with limited prior exposure to microcontrollers can meaningfully complete, learn practical skills, and produce a working demonstration by the end of the event.
                   </p>
+                  
+                  <div className="mt-8 relative p-[2px] rounded-xl bg-gradient-to-r from-yellow-500 via-pink-500 to-fuchsia-600 shadow-[0_0_20px_rgba(217,70,239,0.25)] group">
+                    <div className="bg-[#050810] rounded-[10px] p-4 sm:p-5 flex items-center relative overflow-hidden h-full w-full">
+                      {/* Glow effect on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/0 via-fuchsia-500/10 to-fuchsia-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+
+                      {/* Left Trophy Area */}
+                      <div className="relative flex items-center justify-center min-w-max pl-2 sm:pl-4">
+                        <span className="text-4xl relative z-10">🏆</span>
+                      </div>
+
+                      {/* Vertical divider */}
+                      <div className="h-10 w-[2px] bg-yellow-500 mx-4 sm:mx-6 flex-shrink-0 z-10 opacity-90 shadow-[0_0_5px_rgba(234,179,8,0.5)]"></div>
+
+                      {/* Text content */}
+                      <div className="font-['Space_Grotesk'] text-[15px] sm:text-[17px] leading-tight tracking-wide z-10 flex-1">
+                        <span className="text-white font-bold">Top performers and winning teams will receive </span>
+                        <span className="text-yellow-400 font-bold drop-shadow-[0_0_8px_rgba(250,204,21,0.6)]">
+                          exclusive internship opportunities.
+                        </span>
+                      </div>
+
+                      {/* Bottom right decorative slashes */}
+                      <div className="absolute -bottom-2 -right-3 flex gap-2 transform -skew-x-[25deg]">
+                        <div className="w-3.5 h-12 bg-fuchsia-600 shadow-[0_0_15px_rgba(219,39,119,0.8)]"></div>
+                        <div className="w-5 h-12 bg-fuchsia-500 shadow-[0_0_15px_rgba(217,70,239,0.8)] relative -right-1"></div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

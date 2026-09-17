@@ -298,8 +298,16 @@ function Step1({
           <select
             id="leaderBranch"
             name="leaderBranch"
-            value={team.leaderBranch}
-            onChange={handleTeamChange}
+            value={EMBEDX_CONFIG.branches.includes(team.leaderBranch as any) && team.leaderBranch !== "Other" ? team.leaderBranch : (team.leaderBranch ? "Other" : "")}
+            onChange={(e) => {
+              if (e.target.value === "Other") {
+                // Initialize as empty or keep previous custom value
+                const event = { target: { name: "leaderBranch", value: "Other" } };
+                handleTeamChange(event as any);
+              } else {
+                handleTeamChange(e);
+              }
+            }}
             style={selectStyle("leaderBranch")}
           >
             <option value="">Select branch</option>
@@ -307,8 +315,18 @@ function Step1({
               <option key={b} value={b}>{b}</option>
             ))}
           </select>
+          {(team.leaderBranch === "Other" || (team.leaderBranch !== "" && !EMBEDX_CONFIG.branches.includes(team.leaderBranch as any))) && (
+            <input
+              type="text"
+              name="leaderBranch"
+              value={team.leaderBranch === "Other" ? "" : team.leaderBranch}
+              onChange={handleTeamChange}
+              placeholder="Enter your branch"
+              style={{ ...inputStyle("leaderBranch"), marginTop: "0.5rem" }}
+              autoFocus
+            />
+          )}
         </Field>
-
         <Field label="Year" id="leaderYear" error={errors.leaderYear}>
           <select
             id="leaderYear"
@@ -440,8 +458,15 @@ function Step2({
               <select
                 id={`member${idx}-branch`}
                 name="branch"
-                value={members[idx]?.branch || ""}
-                onChange={(e) => handleMemberChange(idx, e)}
+                value={EMBEDX_CONFIG.branches.includes(members[idx]?.branch as any) && members[idx]?.branch !== "Other" ? members[idx]?.branch : (members[idx]?.branch ? "Other" : "")}
+                onChange={(e) => {
+                  if (e.target.value === "Other") {
+                    const event = { target: { name: "branch", value: "Other" } };
+                    handleMemberChange(idx, event as any);
+                  } else {
+                    handleMemberChange(idx, e);
+                  }
+                }}
                 style={selectStyle(`member${idx}.branch`)}
               >
                 <option value="">Select branch</option>
@@ -449,6 +474,17 @@ function Step2({
                   <option key={b} value={b}>{b}</option>
                 ))}
               </select>
+              {(members[idx]?.branch === "Other" || (members[idx]?.branch !== "" && members[idx]?.branch !== undefined && !EMBEDX_CONFIG.branches.includes(members[idx]?.branch as any))) && (
+                <input
+                  type="text"
+                  name="branch"
+                  value={members[idx]?.branch === "Other" ? "" : members[idx]?.branch || ""}
+                  onChange={(e) => handleMemberChange(idx, e)}
+                  placeholder="Enter branch"
+                  style={{ ...inputStyle(`member${idx}.branch`), marginTop: "0.5rem" }}
+                  autoFocus
+                />
+              )}
             </Field>
 
             <Field label="Year" id={`member${idx}-year`} error={errors[`member${idx}.year`]}>
