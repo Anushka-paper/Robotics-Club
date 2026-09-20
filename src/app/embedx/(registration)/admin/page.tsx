@@ -72,6 +72,7 @@ export default function AdminDashboardPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<{ url: string; team: string; utr: string } | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [copiedUtr, setCopiedUtr] = useState<string | null>(null);
+  const [loadingReceiptFor, setLoadingReceiptFor] = useState<string | null>(null);
   const [showActivityLogs, setShowActivityLogs] = useState<boolean>(false);
   const [allowParticipantEdits, setAllowParticipantEdits] = useState<boolean>(true);
   const [isTogglingEdits, setIsTogglingEdits] = useState<boolean>(false);
@@ -213,6 +214,28 @@ export default function AdminDashboardPage() {
     navigator.clipboard.writeText(text);
     setCopiedUtr(text);
     setTimeout(() => setCopiedUtr(null), 2000);
+  };
+
+  // Screenshots are excluded from the bulk list query (they can be several MB
+  // each as base64), so fetch one on demand only when the admin asks to view it.
+  const fetchReceipt = async (registrationId: string, team: string, utr: string) => {
+    setLoadingReceiptFor(registrationId);
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    try {
+      const res = await fetch(`/api/embedx/admin/registrations/${registrationId}`, {
+        headers: { "x-admin-password": passkey },
+      });
+      const json = await res.json();
+      if (json.success && json.data?.paymentScreenshotUrl) {
+        setSelectedReceipt({ url: json.data.paymentScreenshotUrl, team, utr });
+      } else {
+        alert(json.error || "Could not load receipt for this team.");
+      }
+    } catch {
+      alert("Failed to load receipt.");
+    } finally {
+      setLoadingReceiptFor(null);
+    }
   };
 
   // Update Status
@@ -563,29 +586,26 @@ export default function AdminDashboardPage() {
                           </button>
                         </div>
 
-                        {item.paymentScreenshotUrl ? (
-                          <button
-                            onClick={() => setSelectedReceipt({ url: item.paymentScreenshotUrl, team: item.teamName, utr: item.utr })}
-                            style={{
-                              marginTop: "0.35rem",
-                              background: "rgba(0,240,255,0.1)",
-                              border: "1px solid rgba(0,240,255,0.3)",
-                              color: "#00f0ff",
-                              borderRadius: "0.25rem",
-                              padding: "0.2rem 0.5rem",
-                              fontSize: "0.72rem",
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.3rem",
-                            }}
-                          >
-                            <ImageIcon size={13} />
-                            <span>View Receipt</span>
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>No receipt</span>
-                        )}
+                        <button
+                          onClick={() => fetchReceipt(item.registrationId, item.teamName, item.utr)}
+                          disabled={loadingReceiptFor === item.registrationId}
+                          style={{
+                            marginTop: "0.35rem",
+                            background: "rgba(0,240,255,0.1)",
+                            border: "1px solid rgba(0,240,255,0.3)",
+                            color: "#00f0ff",
+                            borderRadius: "0.25rem",
+                            padding: "0.2rem 0.5rem",
+                            fontSize: "0.72rem",
+                            cursor: loadingReceiptFor === item.registrationId ? "wait" : "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.3rem",
+                          }}
+                        >
+                          <ImageIcon size={13} />
+                          <span>{loadingReceiptFor === item.registrationId ? "Loading..." : "View Receipt"}</span>
+                        </button>
                       </td>
 
                       {/* Status Badge */}
