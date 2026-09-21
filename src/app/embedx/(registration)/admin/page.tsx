@@ -72,9 +72,12 @@ export default function AdminDashboardPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<{ url: string; team: string; utr: string } | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [copiedUtr, setCopiedUtr] = useState<string | null>(null);
+  const [loadingReceiptFor, setLoadingReceiptFor] = useState<string | null>(null);
   const [showActivityLogs, setShowActivityLogs] = useState<boolean>(false);
   const [allowParticipantEdits, setAllowParticipantEdits] = useState<boolean>(true);
   const [isTogglingEdits, setIsTogglingEdits] = useState<boolean>(false);
+  const [registrationsClosed, setRegistrationsClosed] = useState<boolean>(false);
+  const [isTogglingRegistrations, setIsTogglingRegistrations] = useState<boolean>(false);
 
   // Check saved passkey on mount
   useEffect(() => {
@@ -94,6 +97,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success && data.settings) {
         setAllowParticipantEdits(data.settings.allowParticipantEdits !== false); // default true if undefined
+        setRegistrationsClosed(data.settings.registrationsClosed === true); // default false if undefined
       }
     } catch (err) {
       console.error("Failed to fetch settings", err);
@@ -119,6 +123,28 @@ export default function AdminDashboardPage() {
       alert("Failed to update setting.");
     } finally {
       setIsTogglingEdits(false);
+    }
+  };
+
+  const toggleRegistrations = async () => {
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    setIsTogglingRegistrations(true);
+    try {
+      const res = await fetch("/api/embedx/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": passkey },
+        body: JSON.stringify({ key: "registrationsClosed", value: !registrationsClosed })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegistrationsClosed(!registrationsClosed);
+      } else {
+        alert(data.error || "Failed to update setting. Are you a Super Admin?");
+      }
+    } catch (err) {
+      alert("Failed to update setting.");
+    } finally {
+      setIsTogglingRegistrations(false);
     }
   };
 
@@ -213,6 +239,28 @@ export default function AdminDashboardPage() {
     navigator.clipboard.writeText(text);
     setCopiedUtr(text);
     setTimeout(() => setCopiedUtr(null), 2000);
+  };
+
+  // Screenshots are excluded from the bulk list query (they can be several MB
+  // each as base64), so fetch one on demand only when the admin asks to view it.
+  const fetchReceipt = async (registrationId: string, team: string, utr: string) => {
+    setLoadingReceiptFor(registrationId);
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    try {
+      const res = await fetch(`/api/embedx/admin/registrations/${registrationId}`, {
+        headers: { "x-admin-password": passkey },
+      });
+      const json = await res.json();
+      if (json.success && json.data?.paymentScreenshotUrl) {
+        setSelectedReceipt({ url: json.data.paymentScreenshotUrl, team, utr });
+      } else {
+        alert(json.error || "Could not load receipt for this team.");
+      }
+    } catch {
+      alert("Failed to load receipt.");
+    } finally {
+      setLoadingReceiptFor(null);
+    }
   };
 
   // Update Status
@@ -375,6 +423,16 @@ export default function AdminDashboardPage() {
                 <div style={{ width: "10px", height: "10px", background: "#fff", borderRadius: "50%", position: "absolute", top: "2px", left: allowParticipantEdits ? "12px" : "2px", transition: "all 0.3s" }} />
               </div>
               <span>{allowParticipantEdits ? "Edits Open" : "Edits Locked"}</span>
+            </button>
+            <button
+              onClick={toggleRegistrations}
+              disabled={isTogglingRegistrations}
+              style={{ background: !registrationsClosed ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.1)", border: `1px solid ${!registrationsClosed ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.3)"}`, color: !registrationsClosed ? "#4ade80" : "#f87171", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <div style={{ width: "24px", height: "14px", background: !registrationsClosed ? "#4ade80" : "rgba(255,255,255,0.2)", borderRadius: "12px", position: "relative", transition: "all 0.3s" }}>
+                <div style={{ width: "10px", height: "10px", background: "#fff", borderRadius: "50%", position: "absolute", top: "2px", left: !registrationsClosed ? "12px" : "2px", transition: "all 0.3s" }} />
+              </div>
+              <span>{registrationsClosed ? "Registrations Closed" : "Registrations Open"}</span>
             </button>
             <button
               onClick={fetchRegistrations}
@@ -563,29 +621,26 @@ export default function AdminDashboardPage() {
                           </button>
                         </div>
 
-                        {item.paymentScreenshotUrl ? (
-                          <button
-                            onClick={() => setSelectedReceipt({ url: item.paymentScreenshotUrl, team: item.teamName, utr: item.utr })}
-                            style={{
-                              marginTop: "0.35rem",
-                              background: "rgba(0,240,255,0.1)",
-                              border: "1px solid rgba(0,240,255,0.3)",
-                              color: "#00f0ff",
-                              borderRadius: "0.25rem",
-                              padding: "0.2rem 0.5rem",
-                              fontSize: "0.72rem",
-                              cursor: "pointer",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.3rem",
-                            }}
-                          >
-                            <ImageIcon size={13} />
-                            <span>View Receipt</span>
-                          </button>
-                        ) : (
-                          <span style={{ fontSize: "0.75rem", color: "#64748b" }}>No receipt</span>
-                        )}
+                        <button
+                          onClick={() => fetchReceipt(item.registrationId, item.teamName, item.utr)}
+                          disabled={loadingReceiptFor === item.registrationId}
+                          style={{
+                            marginTop: "0.35rem",
+                            background: "rgba(0,240,255,0.1)",
+                            border: "1px solid rgba(0,240,255,0.3)",
+                            color: "#00f0ff",
+                            borderRadius: "0.25rem",
+                            padding: "0.2rem 0.5rem",
+                            fontSize: "0.72rem",
+                            cursor: loadingReceiptFor === item.registrationId ? "wait" : "pointer",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.3rem",
+                          }}
+                        >
+                          <ImageIcon size={13} />
+                          <span>{loadingReceiptFor === item.registrationId ? "Loading..." : "View Receipt"}</span>
+                        </button>
                       </td>
 
                       {/* Status Badge */}

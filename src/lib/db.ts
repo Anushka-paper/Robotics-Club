@@ -218,8 +218,8 @@ function docToRecord(doc: IRegistrationDocument | null): RegistrationRecord | nu
     memberCount: doc.memberCount,
     members: doc.members || [],
     utr: doc.utr,
-    paymentScreenshotUrl: doc.paymentScreenshotUrl,
-    paymentScreenshotPath: doc.paymentScreenshotPath,
+    paymentScreenshotUrl: doc.paymentScreenshotUrl ?? "",
+    paymentScreenshotPath: doc.paymentScreenshotPath ?? "",
     paymentStatus: doc.paymentStatus,
     registrationStatus: doc.registrationStatus,
     score: doc.score ?? 0,
@@ -371,7 +371,12 @@ export async function getAllRegistrations(options?: {
     ];
   }
 
+  // Exclude the (potentially multi-MB base64) screenshot fields from list views —
+  // callers that need one team's screenshot should fetch it individually via
+  // getRegistrationByRegistrationId(). Without this, listing N registrations
+  // pulls N screenshots at once, which has been observed to take minutes.
   const docs = await RegistrationModel.find(filter)
+    .select("-paymentScreenshotUrl -paymentScreenshotPath")
     .sort({ createdAt: -1 })
     .exec();
 
