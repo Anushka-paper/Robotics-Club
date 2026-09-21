@@ -7,6 +7,8 @@ import {
   generateRegistrationId,
   getRegistrationByEmail,
   getRegistrationByUtr,
+  connectToDatabase,
+  SystemSettings,
 } from "@/lib/db";
 import { sendConfirmationEmail } from "@/lib/email";
 import { EMBEDX_CONFIG } from "@/config/embedx";
@@ -16,6 +18,15 @@ export const maxDuration = 30;
 
 export async function POST(request: NextRequest) {
   try {
+    await connectToDatabase();
+    const closedSetting = await SystemSettings.findOne({ key: "registrationsClosed" });
+    if (closedSetting?.value === true) {
+      return NextResponse.json(
+        { success: false, error: "Registrations are currently closed. Please check back later." },
+        { status: 403 }
+      );
+    }
+
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(

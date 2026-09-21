@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { EMBEDX_CONFIG } from "@/config/embedx";
@@ -849,6 +849,18 @@ export default function RegisterPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // ── Registration open/closed check ──────────
+  const [registrationsClosed, setRegistrationsClosed] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/embedx/status")
+      .then((res) => res.json())
+      .then((data) => setRegistrationsClosed(data.registrationsClosed === true))
+      .catch(() => setRegistrationsClosed(false))
+      .finally(() => setCheckingStatus(false));
+  }, []);
+
   // ── Step state ──────────────────────────────
   const [currentStep, setCurrentStep] = useState(1);
 
@@ -1107,6 +1119,30 @@ export default function RegisterPage() {
     gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
     gap: "1rem",
   };
+
+  // ─────────────────────────────────────────────
+  // CLOSED STATE
+  // ─────────────────────────────────────────────
+  if (!checkingStatus && registrationsClosed) {
+    return (
+      <div
+        className="embedx-page-bg"
+        style={{ minHeight: "calc(100dvh - 120px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem" }}
+      >
+        <div className="glass-card" style={{ padding: "2.5rem 2rem", maxWidth: "480px", width: "100%", textAlign: "center" }}>
+          <h2 style={{ fontFamily: "var(--font-space-grotesk)", color: "#f0f6ff", fontWeight: 800, fontSize: "1.5rem", marginBottom: "0.75rem" }}>
+            Registrations Closed
+          </h2>
+          <p style={{ color: "#94a3b8", fontSize: "0.9375rem", lineHeight: 1.6, marginBottom: "1.75rem" }}>
+            EmbedX registrations are currently closed. Please check back later or reach out to the Robotics Club MMMUT team for more information.
+          </p>
+          <button className="btn-secondary" onClick={() => router.push("/embedx")}>
+            &larr; Back to EmbedX
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ─────────────────────────────────────────────
   // PAGE

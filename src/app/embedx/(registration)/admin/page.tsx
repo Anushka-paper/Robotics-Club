@@ -76,6 +76,8 @@ export default function AdminDashboardPage() {
   const [showActivityLogs, setShowActivityLogs] = useState<boolean>(false);
   const [allowParticipantEdits, setAllowParticipantEdits] = useState<boolean>(true);
   const [isTogglingEdits, setIsTogglingEdits] = useState<boolean>(false);
+  const [registrationsClosed, setRegistrationsClosed] = useState<boolean>(false);
+  const [isTogglingRegistrations, setIsTogglingRegistrations] = useState<boolean>(false);
 
   // Check saved passkey on mount
   useEffect(() => {
@@ -95,6 +97,7 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       if (data.success && data.settings) {
         setAllowParticipantEdits(data.settings.allowParticipantEdits !== false); // default true if undefined
+        setRegistrationsClosed(data.settings.registrationsClosed === true); // default false if undefined
       }
     } catch (err) {
       console.error("Failed to fetch settings", err);
@@ -120,6 +123,28 @@ export default function AdminDashboardPage() {
       alert("Failed to update setting.");
     } finally {
       setIsTogglingEdits(false);
+    }
+  };
+
+  const toggleRegistrations = async () => {
+    const passkey = localStorage.getItem("embedx_admin_passkey") || "";
+    setIsTogglingRegistrations(true);
+    try {
+      const res = await fetch("/api/embedx/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-admin-password": passkey },
+        body: JSON.stringify({ key: "registrationsClosed", value: !registrationsClosed })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegistrationsClosed(!registrationsClosed);
+      } else {
+        alert(data.error || "Failed to update setting. Are you a Super Admin?");
+      }
+    } catch (err) {
+      alert("Failed to update setting.");
+    } finally {
+      setIsTogglingRegistrations(false);
     }
   };
 
@@ -398,6 +423,16 @@ export default function AdminDashboardPage() {
                 <div style={{ width: "10px", height: "10px", background: "#fff", borderRadius: "50%", position: "absolute", top: "2px", left: allowParticipantEdits ? "12px" : "2px", transition: "all 0.3s" }} />
               </div>
               <span>{allowParticipantEdits ? "Edits Open" : "Edits Locked"}</span>
+            </button>
+            <button
+              onClick={toggleRegistrations}
+              disabled={isTogglingRegistrations}
+              style={{ background: !registrationsClosed ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.1)", border: `1px solid ${!registrationsClosed ? "rgba(34,197,94,0.4)" : "rgba(239,68,68,0.3)"}`, color: !registrationsClosed ? "#4ade80" : "#f87171", padding: "0.5rem 1rem", borderRadius: "0.5rem", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+            >
+              <div style={{ width: "24px", height: "14px", background: !registrationsClosed ? "#4ade80" : "rgba(255,255,255,0.2)", borderRadius: "12px", position: "relative", transition: "all 0.3s" }}>
+                <div style={{ width: "10px", height: "10px", background: "#fff", borderRadius: "50%", position: "absolute", top: "2px", left: !registrationsClosed ? "12px" : "2px", transition: "all 0.3s" }} />
+              </div>
+              <span>{registrationsClosed ? "Registrations Closed" : "Registrations Open"}</span>
             </button>
             <button
               onClick={fetchRegistrations}
